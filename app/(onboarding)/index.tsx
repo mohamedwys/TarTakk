@@ -1,4 +1,5 @@
 import AnimatedButton from '@/components/AnimatedButton';
+import { safeUri } from '@/lib/utils/image';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
@@ -85,7 +86,7 @@ export default function OnboardingScreen() {
           {/* Image */}
           <View style={styles.imageContainer}>
             <Image
-              source={{ uri: item.image }}
+              source={safeUri(item.image)}
               style={styles.image}
               resizeMode="cover"
             />

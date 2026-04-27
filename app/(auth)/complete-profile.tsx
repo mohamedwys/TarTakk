@@ -1,6 +1,7 @@
 import AnimatedButton from "@/components/AnimatedButton";
 import { authAPI } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
+import { safeUri } from "@/lib/utils/image";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
@@ -280,7 +281,7 @@ export default function CompleteProfileScreen() {
           >
             {profileImage ? (
               <Image
-                source={{ uri: profileImage }}
+                source={safeUri(profileImage)}
                 style={styles.profileImage}
               />
             ) : (

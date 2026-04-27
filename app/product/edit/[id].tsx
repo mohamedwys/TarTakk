@@ -1,6 +1,7 @@
 import AnimatedButton from "@/components/AnimatedButton";
 import { productsAPI } from "@/lib/api"; // ✅ ADD API IMPORT
 import { supabase } from "@/lib/supabase";
+import { safeUri } from "@/lib/utils/image";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -479,7 +480,7 @@ export default function EditListingScreen() {
             {/* Image Previews */}
             {images.map((uri, index) => (
               <View key={index} style={styles.imagePreview}>
-                <Image source={{ uri }} style={styles.previewImage} />
+                <Image source={safeUri(uri)} style={styles.previewImage} />
                 {index === 0 && (
                   <View style={styles.coverBadge}>
                     <Text style={styles.coverText}>Cover</Text>

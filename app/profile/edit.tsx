@@ -1,6 +1,7 @@
 import AnimatedButton from "@/components/AnimatedButton";
 import { userAPI } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
+import { safeUri } from "@/lib/utils/image";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
@@ -221,7 +222,7 @@ export default function EditProfileScreen() {
             disabled={uploadingAvatar}
           >
             <Image
-              source={{ uri: avatar || "" }}
+              source={safeUri(avatar)}
               style={[styles.avatar, !avatar && styles.avatarPlaceholder]}
             />
             {!avatar && (

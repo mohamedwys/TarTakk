@@ -1,6 +1,7 @@
 import AnimatedButton from "@/components/AnimatedButton";
 import { productsAPI, reviewsAPI, userAPI } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
+import { safeUri } from "@/lib/utils/image";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -217,7 +218,7 @@ export default function ProfileScreen() {
       onPress={() => router.push(`/product/${item.id}`)}
     >
       <Image
-        source={{ uri: item.images?.[0] || "" }}
+        source={safeUri(item.images?.[0])}
         style={styles.listingImage}
       />
       <View style={styles.listingInfo}>
@@ -294,7 +295,7 @@ export default function ProfileScreen() {
                   disabled={updatingAvatar}
                 >
                   <Image
-                    source={{ uri: user.avatar || "" }}
+                    source={safeUri(user.avatar)}
                     style={[
                       styles.avatar,
                       !user.avatar && styles.avatarPlaceholder,
@@ -482,11 +483,7 @@ export default function ProfileScreen() {
                       <View key={review.id} style={styles.reviewCard}>
                         <View style={styles.reviewHeader}>
                           <Image
-                            source={{
-                              uri:
-                                review.reviewer.avatar ||
-                                "https://i.pravatar.cc/300?img=47",
-                            }}
+                            source={safeUri(review.reviewer?.avatar)}
                             style={styles.reviewerAvatar}
                           />
                           <View style={styles.reviewInfo}>

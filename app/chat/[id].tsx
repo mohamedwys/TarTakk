@@ -3,6 +3,7 @@ import AnimatedButton from "@/components/AnimatedButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { conversationsAPI, messagesAPI } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
+import { safeUri } from "@/lib/utils/image";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
@@ -259,7 +260,7 @@ export default function ChatScreen() {
       >
         {!isMe && userInfo?.avatar && (
           <Image
-            source={{ uri: userInfo.avatar }}
+            source={safeUri(userInfo.avatar)}
             style={styles.messageAvatar}
           />
         )}
@@ -320,9 +321,7 @@ export default function ChatScreen() {
           >
             <View style={styles.avatarContainer}>
               <Image
-                source={{
-                  uri: userInfo?.avatar || "https://i.pravatar.cc/150",
-                }}
+                source={safeUri(userInfo?.avatar)}
                 style={styles.avatar}
               />
               {userInfo?.isOnline && <View style={styles.onlineBadge} />}
@@ -349,7 +348,7 @@ export default function ChatScreen() {
               onPress={() => router.push(`/product/${productInfo.id}`)}
             >
               <Image
-                source={{ uri: productInfo.image }}
+                source={safeUri(productInfo.image)}
                 style={styles.productImage}
               />
               <View style={styles.productInfo}>
