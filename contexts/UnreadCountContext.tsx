@@ -1,6 +1,6 @@
 import { conversationsAPI } from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import io from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
 interface UnreadCountContextType {
@@ -28,7 +28,7 @@ export const UnreadCountProvider: React.FC<{ children: React.ReactNode }> = ({ c
     try {
       const response = await conversationsAPI.getConversations();
       const total = response.conversations.reduce(
-        (sum: number, conv: any) => sum + (conv.unreadCount || 0), 
+        (sum: number, conv: any) => sum + (conv.unreadCount || 0),
         0
       );
       setTotalUnreadCount(total);
@@ -42,28 +42,38 @@ export const UnreadCountProvider: React.FC<{ children: React.ReactNode }> = ({ c
   }, [token]);
 
   useEffect(() => {
-    if (!token || !user) return;
+    if (!user) return;
 
-    const socket = io('https://marketplace-backend-blush.vercel.app', {
-      auth: { token }
-    });
-
-    socket.on('message', (message: any) => {
-      if (message.senderId !== user._id) {
-        setTotalUnreadCount(prev => prev + 1);
-      }
-    });
-
-    socket.on('messagesRead', (data: any) => {
-      if (data.userId === user._id) {
-        refreshUnreadCount();
-      }
-    });
+    // Supabase Realtime: the update_conversation_on_message trigger
+    // bumps each conversation's unread counter on every new message,
+    // and markAsRead resets the current user's side. Both fire UPDATE
+    // events on `conversations`, so refreshing on each event keeps the
+    // total in sync without subscribing to every individual message.
+    //
+    // RLS already restricts which conversations this client can see.
+    const channel = supabase
+      .channel(`unread:${user._id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'conversations',
+        },
+        () => {
+          refreshUnreadCount();
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('📡 unread channel error:', status);
+        }
+      });
 
     return () => {
-      socket.disconnect();
+      supabase.removeChannel(channel);
     };
-  }, [token, user]);
+  }, [user]);
 
   return (
     <UnreadCountContext.Provider value={{ totalUnreadCount, refreshUnreadCount }}>
