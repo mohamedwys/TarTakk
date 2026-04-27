@@ -1,5 +1,6 @@
 import AnimatedButton from "@/components/AnimatedButton";
 import { productsAPI, reviewsAPI, userAPI } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -104,31 +105,40 @@ export default function ProfileScreen() {
   const soldListings = listings.filter((item) => item.status === "sold");
 
   const uploadAvatarToCloudinary = async (uri: string): Promise<string> => {
-    const formData = new FormData();
+    // Name kept for backwards compatibility; uploads now go to the
+    // Supabase Storage `avatars` bucket. RLS limits writes to the
+    // current authenticated user.
+    const fileExtension = (uri.split(".").pop() || "jpg").toLowerCase();
+    const contentType = `image/${fileExtension === "jpg" ? "jpeg" : fileExtension}`;
 
-    const fileExtension = uri.split(".").pop() || "jpg";
-    const fileName = `profile_${Date.now()}.${fileExtension}`;
-
-    formData.append("file", {
-      uri,
-      type: `image/${fileExtension}`,
-      name: fileName,
-    } as any);
-
-    const response = await fetch(
-      "https://marketplace-backend-blush.vercel.app/api/upload?folder=profiles", 
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Upload failed");
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError || !user) {
+      throw new Error("Not authenticated");
     }
 
-    const data = await response.json();
-    return data.url;
+    const fileResponse = await fetch(uri);
+    const fileBytes = await fileResponse.arrayBuffer();
+
+    const path = `${user.id}/${Date.now()}_avatar.jpg`;
+    const { data, error } = await supabase.storage
+      .from("avatars")
+      .upload(path, fileBytes, {
+        contentType,
+        upsert: true,
+      });
+
+    if (error || !data) {
+      console.error("❌ avatar upload failed:", error?.message);
+      throw new Error(error?.message ?? "Upload failed");
+    }
+
+    const url = supabase.storage
+      .from("avatars")
+      .getPublicUrl(data.path).data.publicUrl;
+    return url;
   };
 
   const handleAvatarChange = async () => {
