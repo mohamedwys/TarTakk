@@ -506,6 +506,31 @@ const toProductRow = (input: AnyRow): AnyRow => {
   return row;
 };
 
+// Legacy English category names → schema's French `name_fr`. The app
+// still passes English labels (Books, Electronics, ...) so getProducts
+// translates them to the matching French row in the categories table
+// before calling search_products.
+const CATEGORY_MAP: Record<string, string> = {
+  Books: "Autres",
+  Beauty: "Autres",
+  Electronics: "Électronique",
+  Home: "Maison & Jardin",
+  Toys: "Loisirs & Sport",
+  Vehicles: "Véhicules",
+  Fashion: "Mode & Vêtements",
+  Sports: "Loisirs & Sport",
+  Furniture: "Maison & Jardin",
+  Garden: "Maison & Jardin",
+  Jobs: "Emploi & Services",
+  Animals: "Animaux",
+  Agriculture: "Agriculture",
+  "Real Estate": "Immobilier",
+  Other: "Autres",
+};
+
+const isUUID = (str: string): boolean =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
 export const productsAPI = {
   /**
    * List products. Accepts the legacy URLSearchParams-style options
@@ -516,10 +541,27 @@ export const productsAPI = {
   getProducts: async (params?: AnyRow) => {
     console.log("📦 supabase getProducts", params);
 
+    // Resolve a category filter that arrived as a name (e.g. "Electronics")
+    // into a UUID by translating through CATEGORY_MAP and looking up the
+    // matching `name_fr` / `slug` in the categories table. UUIDs pass
+    // through untouched. If the lookup yields no row we send null so the
+    // RPC simply skips the category filter rather than returning nothing.
+    let categoryId: string | null =
+      params?.category ?? params?.category_id ?? null;
+    if (categoryId && !isUUID(categoryId)) {
+      const mapped = CATEGORY_MAP[categoryId] ?? categoryId;
+      const { data: cat } = await supabase
+        .from("categories")
+        .select("id")
+        .or(`name_fr.ilike.${mapped},slug.ilike.${mapped}`)
+        .maybeSingle();
+      categoryId = cat?.id ?? null;
+    }
+
     const { data, error } = await supabase.rpc("search_products", {
       search_term: params?.search ?? null,
       region_filter: params?.region ?? params?.region_id ?? null,
-      category_filter: params?.category ?? params?.category_id ?? null,
+      category_filter: categoryId,
       listing_type_filter: params?.type ?? params?.listing_type ?? null,
       min_price:
         params?.minPrice !== undefined ? Number(params.minPrice) : null,
