@@ -8,52 +8,34 @@ if (!supabaseUrl || !supabaseKey) {
   console.error("❌ SUPABASE ENV VARS MISSING");
 }
 
-// SecureStore values are capped at ~2 KiB, but Supabase sessions exceed that.
-// Adapter splits long values across multiple SecureStore entries.
-const CHUNK_SIZE = 1800;
+// Supabase derives storage keys like `sb-<projectref>-auth-token`. SecureStore
+// only accepts keys matching [A-Za-z0-9._-], so we replace anything outside
+// that set with `_` before every read/write to avoid silent failures.
+const sanitizeKey = (key: string): string => {
+  return key.replace(/[^a-zA-Z0-9._-]/g, "_");
+};
 
 const SecureStoreAdapter = {
   getItem: async (key: string): Promise<string | null> => {
-    const meta = await SecureStore.getItemAsync(key);
-    if (!meta) return null;
-    if (!meta.startsWith("__chunked__:")) return meta;
-
-    const count = parseInt(meta.split(":")[1], 10);
-    const parts: string[] = [];
-    for (let i = 0; i < count; i++) {
-      const part = await SecureStore.getItemAsync(`${key}::${i}`);
-      if (part === null) return null;
-      parts.push(part);
+    try {
+      return await SecureStore.getItemAsync(sanitizeKey(key));
+    } catch {
+      return null;
     }
-    return parts.join("");
   },
   setItem: async (key: string, value: string): Promise<void> => {
-    if (value.length <= CHUNK_SIZE) {
-      await SecureStore.setItemAsync(key, value);
-      return;
+    try {
+      await SecureStore.setItemAsync(sanitizeKey(key), value);
+    } catch (e) {
+      console.error("SecureStore setItem failed:", e);
     }
-    const chunks: string[] = [];
-    for (let i = 0; i < value.length; i += CHUNK_SIZE) {
-      chunks.push(value.slice(i, i + CHUNK_SIZE));
-    }
-    await SecureStore.setItemAsync(key, `__chunked__:${chunks.length}`);
-    await Promise.all(
-      chunks.map((chunk, idx) =>
-        SecureStore.setItemAsync(`${key}::${idx}`, chunk)
-      )
-    );
   },
   removeItem: async (key: string): Promise<void> => {
-    const meta = await SecureStore.getItemAsync(key);
-    if (meta?.startsWith("__chunked__:")) {
-      const count = parseInt(meta.split(":")[1], 10);
-      await Promise.all(
-        Array.from({ length: count }).map((_, i) =>
-          SecureStore.deleteItemAsync(`${key}::${i}`)
-        )
-      );
+    try {
+      await SecureStore.deleteItemAsync(sanitizeKey(key));
+    } catch {
+      // ignore
     }
-    await SecureStore.deleteItemAsync(key);
   },
 };
 
