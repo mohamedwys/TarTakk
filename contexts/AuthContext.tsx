@@ -55,11 +55,15 @@ interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const hasCheckedAuth = useRef(false);
 
   const isAuthenticated = !!token && !!user;
-  const isVerified = user?.emailVerified ? true : false;
+  // Source of truth for "is this account verified" is the Supabase
+  // session — confirmed accounts have email_confirmed_at set on the
+  // auth user. No OTP/code state involved.
+  const isVerified = !!session?.user?.email_confirmed_at;
 
   /**
    * Mirror a Supabase Session into local state. If a session exists we
@@ -70,6 +74,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
    * decoding needed.
    */
   const hydrateFromSession = async (session: Session | null) => {
+    setSession(session);
     if (!session) {
       setToken(null);
       setUser(null);
@@ -202,6 +207,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         console.log("🔐 onAuthStateChange:", event);
 
         if (event === "SIGNED_OUT") {
+          setSession(null);
           setToken(null);
           setUser(null);
           return;

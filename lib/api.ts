@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { supabase } from "./supabase";
 
 // Supabase-backed auth. Source of truth: lib/supabase-auth.ts.
@@ -8,10 +9,13 @@ export const authAPI = {
   /**
    * Register a new user.
    *
-   * Mirrors the legacy REST shape: `{ user }`. When email confirmation is
-   * enabled (Supabase default) `session` is null until the user clicks the
-   * verification link, so callers should treat the user as unauthenticated
-   * and route to the verify-email screen — same flow as before.
+   * On success the user is NOT auto-logged-in — Supabase's "Confirm
+   * email" setting requires them to click the magic link first. We
+   * navigate to the verify-email screen with the email as a route
+   * param so the screen can show "we sent a link to ${email}" without
+   * extra state plumbing. token/session are intentionally omitted from
+   * the return so callers can't accidentally treat the user as
+   * authenticated.
    */
   register: async (data: { name: string; email: string; password: string }) => {
     console.log("🔐 supabase.auth.signUp", data.email);
@@ -54,10 +58,18 @@ export const authAPI = {
       console.error("⚠️ profile upsert failed:", profileError.message);
     }
 
+    // Send the user to the "check your email" screen. Email is passed
+    // as a route param so the screen can render it without reading
+    // AsyncStorage. Use replace so the back button doesn't drop the
+    // user back into the registration form.
+    router.replace({
+      pathname: "/(auth)/verify-email",
+      params: { email: data.email },
+    });
+
     return {
       user,
-      token: signUpData.session?.access_token ?? null,
-      session: signUpData.session,
+      needsEmailConfirmation: true,
     };
   },
 
