@@ -449,8 +449,15 @@ const fromProductRow = (row: AnyRow | null): AnyRow | null => {
       region: regionRow?.name_fr ?? null,
       country: "MAR",
     },
-    images: row.images ?? [],
-    thumbnail: row.thumbnail_url ?? row.images?.[0] ?? null,
+    images: (row.images ?? []).filter(
+      (u: unknown) => typeof u === "string" && u.trim() !== ""
+    ),
+    thumbnail:
+      row.thumbnail_url ??
+      (row.images ?? []).find(
+        (u: unknown) => typeof u === "string" && u.trim() !== ""
+      ) ??
+      null,
     isNegotiable: row.is_negotiable,
     listingType: row.listing_type,
     isFeatured: row.is_featured,
@@ -1165,7 +1172,9 @@ const fromFavoriteRow = (row: AnyRow): AnyRow => {
     price: Number(product.price ?? 0),
     currency: product.currency ?? "MAD",
     image,
-    images: product.images ?? (image ? [image] : []),
+    images: (product.images ?? (image ? [image] : [])).filter(
+      (u: unknown) => typeof u === "string" && u.trim() !== ""
+    ),
     thumbnail: image,
     location: locationParts.length ? locationParts.join(", ") : "",
     city: product.city ?? null,

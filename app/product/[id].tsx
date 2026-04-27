@@ -9,6 +9,7 @@ import {
   productsAPI,
   reviewsAPI,
 } from "@/lib/api";
+import { filterImages, safeUri } from "@/lib/utils/image";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -428,10 +429,10 @@ export default function ProductDetailScreen() {
               }}
               scrollEventThrottle={16}
             >
-              {product.images?.map((image: string, index: number) => (
+              {filterImages(product.images).map((image, index) => (
                 <Image
                   key={index}
-                  source={{ uri: image }}
+                  source={safeUri(image)}
                   style={styles.productImage}
                 />
               ))}
@@ -439,7 +440,7 @@ export default function ProductDetailScreen() {
 
             {/* Image Indicators */}
             <View style={styles.imageIndicators}>
-              {product.images?.map((_: string, index: number) => (
+              {filterImages(product.images).map((_, index) => (
                 <View
                   key={index}
                   style={[
@@ -503,11 +504,7 @@ export default function ProductDetailScreen() {
           >
             <View style={styles.sellerLeft}>
               <Image
-                source={{
-                  uri:
-                    product?.seller?.avatar ||
-                    "https://i.pravatar.cc/300?img=47",
-                }}
+                source={safeUri(product?.seller?.avatar)}
                 style={styles.sellerAvatar}
               />
               <View style={styles.sellerInfo}>
@@ -573,11 +570,7 @@ export default function ProductDetailScreen() {
                   <View key={review.id} style={styles.reviewCard}>
                     <View style={styles.reviewHeader}>
                       <Image
-                        source={{
-                          uri:
-                            review.reviewer.avatar ||
-                            "https://i.pravatar.cc/300?img=47",
-                        }}
+                        source={safeUri(review.reviewer?.avatar)}
                         style={styles.reviewerAvatar}
                       />
                       <View style={styles.reviewInfo}>
@@ -658,11 +651,7 @@ export default function ProductDetailScreen() {
                 <View key={review.id} style={styles.reviewCard}>
                   <View style={styles.reviewHeader}>
                     <Image
-                      source={{
-                        uri:
-                          review.reviewer.avatar ||
-                          "https://i.pravatar.cc/300?img=47",
-                      }}
+                      source={safeUri(review.reviewer?.avatar)}
                       style={styles.reviewerAvatar}
                     />
                     <View style={styles.reviewInfo}>
@@ -712,10 +701,7 @@ export default function ProductDetailScreen() {
                     onPress={() => router.push(`/product/${item.id}`)}
                   >
                     <Image
-                      source={{
-                        uri:
-                          item.images[0] || "https://i.pravatar.cc/300?img=47",
-                      }}
+                      source={safeUri(item.images?.[0])}
                       style={styles.similarProductImage}
                     />
                     <View style={styles.similarProductInfo}>

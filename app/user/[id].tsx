@@ -1,5 +1,6 @@
 import AnimatedButton from "@/components/AnimatedButton";
 import { productsAPI, reviewsAPI, userAPI } from "@/lib/api";
+import { safeUri } from "@/lib/utils/image";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -96,7 +97,7 @@ export default function UserProfileScreen() {
       onPress={() => router.push(`/product/${item.id}`)}
     >
       <Image
-        source={{ uri: item.images[0] || "https://i.pravatar.cc/300?img=47" }}
+        source={safeUri(item.images?.[0])}
         style={styles.listingImage}
       />
       {item.condition === "new" && (
@@ -117,9 +118,7 @@ export default function UserProfileScreen() {
     <View key={item.id} style={styles.reviewCard}>
       <View style={styles.reviewHeader}>
         <Image
-          source={{
-            uri: item.reviewer.avatar || "https://i.pravatar.cc/150?img=47",
-          }}
+          source={safeUri(item.reviewer?.avatar)}
           style={styles.reviewerAvatar}
         />
         <View style={styles.reviewerInfo}>
@@ -209,9 +208,7 @@ export default function UserProfileScreen() {
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
             <Image
-              source={{
-                uri: user.avatar || "https://i.pravatar.cc/300?img=47",
-              }}
+              source={safeUri(user.avatar)}
               style={styles.avatar}
             />
             {user.emailVerified && (

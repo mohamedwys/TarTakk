@@ -1,6 +1,7 @@
 import AnimatedButton from "@/components/AnimatedButton";
 import NotificationCardSkeleton from "@/components/NotificationCardSkeleton";
 import { notificationsAPI } from "@/lib/api"; // ✅ ADD API IMPORT
+import { safeUri } from "@/lib/utils/image";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -319,7 +320,7 @@ export default function NotificationsScreen() {
           {notification.avatar ? (
             <View style={styles.avatarContainer}>
               <Image
-                source={{ uri: notification.avatar }}
+                source={safeUri(notification.avatar)}
                 style={styles.avatar}
               />
               <View style={[styles.iconBadge, { backgroundColor: icon.color }]}>
@@ -329,7 +330,7 @@ export default function NotificationsScreen() {
           ) : notification.productImage ? (
             <View style={styles.avatarContainer}>
               <Image
-                source={{ uri: notification.productImage }}
+                source={safeUri(notification.productImage)}
                 style={styles.productThumb}
               />
               <View style={[styles.iconBadge, { backgroundColor: icon.color }]}>

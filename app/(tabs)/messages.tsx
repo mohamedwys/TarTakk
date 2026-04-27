@@ -1,6 +1,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { conversationsAPI } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
+import { safeUri } from "@/lib/utils/image";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -159,7 +160,7 @@ const loadConversations = async () => {
     >
       <View style={styles.avatarContainer}>
         <Image
-          source={{ uri: item.userAvatar || "https://i.pravatar.cc/150" }}
+          source={safeUri(item.userAvatar)}
           style={styles.avatar}
         />
         {item.isOnline && <View style={styles.onlineBadge} />}

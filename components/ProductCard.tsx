@@ -1,3 +1,4 @@
+import { safeUri } from "@/lib/utils/image";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { MotiView } from "moti";
@@ -114,7 +115,7 @@ export default function ProductCard({
 
             {/* Image */}
             <Image
-              source={{ uri: image }}
+              source={safeUri(image)}
               style={styles.image}
               onLoad={() => setImageLoaded(true)}
             />
