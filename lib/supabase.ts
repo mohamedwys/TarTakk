@@ -13,7 +13,13 @@ if (!supabaseUrl || !supabaseKey) {
 // `sb-<projectref>-auth-token` and stores session JSON that exceeds 2 KiB,
 // so this adapter both sanitizes the key and chunks long values across
 // multiple SecureStore entries.
+//
+// The chunk count is stored under `<key>${CHUNK_MARKER_SUFFIX}` (separate
+// from `<key>` itself) so the main key only ever holds either the full
+// JSON or nothing — never a marker string that could leak back to
+// auth-js as a value.
 const CHUNK_SIZE = 1800;
+const CHUNK_MARKER_SUFFIX = "_n";
 
 const sanitizeKey = (key: string): string =>
   key.replace(/[^a-zA-Z0-9._-]/g, "_");
@@ -22,7 +28,7 @@ const SecureStoreAdapter = {
   getItem: async (key: string): Promise<string | null> => {
     try {
       const k = sanitizeKey(key);
-      const count = await SecureStore.getItemAsync(`${k}_chunks`);
+      const count = await SecureStore.getItemAsync(`${k}${CHUNK_MARKER_SUFFIX}`);
       if (count) {
         let value = "";
         for (let i = 0; i < parseInt(count); i++) {
@@ -32,7 +38,16 @@ const SecureStoreAdapter = {
         }
         return value;
       }
-      return await SecureStore.getItemAsync(k);
+
+      const single = await SecureStore.getItemAsync(k);
+      // Defensive: a previous build wrote the bare chunk count (e.g. "2")
+      // straight into the main key. Returning that to auth-js triggers
+      // "Cannot create property 'user' on string '2'". Treat any value
+      // starting with a digit as a stale bad marker and drop it.
+      if (single != null && /^\d/.test(single)) {
+        return null;
+      }
+      return single;
     } catch {
       return null;
     }
@@ -43,7 +58,7 @@ const SecureStoreAdapter = {
       const k = sanitizeKey(key);
       if (value.length <= CHUNK_SIZE) {
         await SecureStore.setItemAsync(k, value);
-        await SecureStore.deleteItemAsync(`${k}_chunks`);
+        await SecureStore.deleteItemAsync(`${k}${CHUNK_MARKER_SUFFIX}`);
       } else {
         const chunks = Math.ceil(value.length / CHUNK_SIZE);
         for (let i = 0; i < chunks; i++) {
@@ -52,7 +67,10 @@ const SecureStoreAdapter = {
             value.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
           );
         }
-        await SecureStore.setItemAsync(`${k}_chunks`, String(chunks));
+        await SecureStore.setItemAsync(
+          `${k}${CHUNK_MARKER_SUFFIX}`,
+          String(chunks)
+        );
       }
     } catch (e) {
       console.error("SecureStore setItem failed:", e);
@@ -62,12 +80,12 @@ const SecureStoreAdapter = {
   removeItem: async (key: string): Promise<void> => {
     try {
       const k = sanitizeKey(key);
-      const count = await SecureStore.getItemAsync(`${k}_chunks`);
+      const count = await SecureStore.getItemAsync(`${k}${CHUNK_MARKER_SUFFIX}`);
       if (count) {
         for (let i = 0; i < parseInt(count); i++) {
           await SecureStore.deleteItemAsync(`${k}_${i}`);
         }
-        await SecureStore.deleteItemAsync(`${k}_chunks`);
+        await SecureStore.deleteItemAsync(`${k}${CHUNK_MARKER_SUFFIX}`);
       }
       await SecureStore.deleteItemAsync(k);
     } catch {
