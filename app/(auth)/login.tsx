@@ -43,7 +43,8 @@ export default function LoginScreen() {
         email,
         password,
       });
-      await AsyncStorage.setItem("token", data.token);
+      // Supabase persists the session via the SecureStore adapter in
+      // lib/supabase.ts — no manual token write needed.
       await AsyncStorage.setItem("user", JSON.stringify(data.user));
 
       Toast.show({

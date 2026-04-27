@@ -110,10 +110,8 @@ export default function VerifyEmailScreen() {
       await AsyncStorage.setItem("user", JSON.stringify(data.user));
     }
 
-    const tokenToStore = data.token || data.tempToken;
-    if (tokenToStore) {
-      await AsyncStorage.setItem("token", tokenToStore);
-    }
+    // Supabase manages the session for us via the SecureStore adapter in
+    // lib/supabase.ts — no manual token write needed.
 
     await AsyncStorage.removeItem("pendingEmail");
     
