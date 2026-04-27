@@ -8,31 +8,68 @@ if (!supabaseUrl || !supabaseKey) {
   console.error("❌ SUPABASE ENV VARS MISSING");
 }
 
-// Supabase derives storage keys like `sb-<projectref>-auth-token`. SecureStore
-// only accepts keys matching [A-Za-z0-9._-], so we replace anything outside
-// that set with `_` before every read/write to avoid silent failures.
-const sanitizeKey = (key: string): string => {
-  return key.replace(/[^a-zA-Z0-9._-]/g, "_");
-};
+// SecureStore on iOS / Android caps each value at ~2 KiB and only accepts
+// keys matching [A-Za-z0-9._-]. Supabase derives keys like
+// `sb-<projectref>-auth-token` and stores session JSON that exceeds 2 KiB,
+// so this adapter both sanitizes the key and chunks long values across
+// multiple SecureStore entries.
+const CHUNK_SIZE = 1800;
+
+const sanitizeKey = (key: string): string =>
+  key.replace(/[^a-zA-Z0-9._-]/g, "_");
 
 const SecureStoreAdapter = {
   getItem: async (key: string): Promise<string | null> => {
     try {
-      return await SecureStore.getItemAsync(sanitizeKey(key));
+      const k = sanitizeKey(key);
+      const count = await SecureStore.getItemAsync(`${k}_chunks`);
+      if (count) {
+        let value = "";
+        for (let i = 0; i < parseInt(count); i++) {
+          const chunk = await SecureStore.getItemAsync(`${k}_${i}`);
+          if (chunk == null) return null;
+          value += chunk;
+        }
+        return value;
+      }
+      return await SecureStore.getItemAsync(k);
     } catch {
       return null;
     }
   },
+
   setItem: async (key: string, value: string): Promise<void> => {
     try {
-      await SecureStore.setItemAsync(sanitizeKey(key), value);
+      const k = sanitizeKey(key);
+      if (value.length <= CHUNK_SIZE) {
+        await SecureStore.setItemAsync(k, value);
+        await SecureStore.deleteItemAsync(`${k}_chunks`);
+      } else {
+        const chunks = Math.ceil(value.length / CHUNK_SIZE);
+        for (let i = 0; i < chunks; i++) {
+          await SecureStore.setItemAsync(
+            `${k}_${i}`,
+            value.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
+          );
+        }
+        await SecureStore.setItemAsync(`${k}_chunks`, String(chunks));
+      }
     } catch (e) {
       console.error("SecureStore setItem failed:", e);
     }
   },
+
   removeItem: async (key: string): Promise<void> => {
     try {
-      await SecureStore.deleteItemAsync(sanitizeKey(key));
+      const k = sanitizeKey(key);
+      const count = await SecureStore.getItemAsync(`${k}_chunks`);
+      if (count) {
+        for (let i = 0; i < parseInt(count); i++) {
+          await SecureStore.deleteItemAsync(`${k}_${i}`);
+        }
+        await SecureStore.deleteItemAsync(`${k}_chunks`);
+      }
+      await SecureStore.deleteItemAsync(k);
     } catch {
       // ignore
     }
