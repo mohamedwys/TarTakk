@@ -1,5 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { conversationsAPI } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -14,7 +15,6 @@ import {
   View,
 } from "react-native";
 import Toast from "react-native-toast-message";
-import io, { Socket } from "socket.io-client";
 
 interface Conversation {
   id: string;
@@ -30,25 +30,6 @@ interface Conversation {
   isOnline: boolean;
 }
 
-interface MessageEvent {
-  id: string;
-  text: string;
-  senderId: string;
-  timestamp: string;
-  isRead: boolean;
-  conversationId: string;
-}
-
-interface ReadReceiptEvent {
-  conversationId: string;
-  userId: string;
-}
-
-interface UserStatusEvent {
-  userId: string;
-  isOnline: boolean;
-}
-
 export default function MessagesScreen() {
   const router = useRouter();
   const { user, token } = useAuth();
@@ -56,7 +37,6 @@ export default function MessagesScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [socket, setSocket] = useState<Socket | null>(null);
 
 const loadConversations = async () => {
   console.log("Loading conversations, token:", !!token); 
@@ -83,59 +63,63 @@ const loadConversations = async () => {
   }, [token]);
 
   useEffect(() => {
-    if (!token || !user) return;
+    if (!user) return;
 
-    const newSocket = io("https://marketplace-backend-blush.vercel.app", {
-      auth: { token },
-    });
+    // The update_conversation_on_message trigger updates each conversation
+    // row whenever a new message arrives, and markAsRead resets the
+    // current user's unread counter — so an UPDATE subscription on
+    // `conversations` covers both "new message arrived" and "thread was
+    // read elsewhere" without a separate event.
+    //
+    // RLS already restricts what this client can see, so no per-user
+    // filter is needed here.
+    const channel = supabase
+      .channel(`conversations:${user._id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "conversations",
+        },
+        (payload) => {
+          const row = payload.new as {
+            id: string;
+            buyer_id: string;
+            seller_id: string;
+            last_message: string | null;
+            last_message_at: string | null;
+            buyer_unread: number;
+            seller_unread: number;
+          };
 
-    setSocket(newSocket);
+          const isBuyer = row.buyer_id === user._id;
+          const unread = isBuyer ? row.buyer_unread : row.seller_unread;
 
-    // Listen for new messages
-    newSocket.on("message", (message: MessageEvent) => {
-      setConversations((prev) =>
-        prev.map((conv) =>
-          conv.id === message.conversationId
-            ? {
-                ...conv,
-                lastMessage: message.text,
-                lastMessageTime: message.timestamp,
-                unreadCount:
-                  message.senderId !== user._id
-                    ? conv.unreadCount + 1
-                    : conv.unreadCount,
-              }
-            : conv
-        )
-      );
-    });
-
-    // Listen for read receipts
-    newSocket.on("messagesRead", (data: ReadReceiptEvent) => {
-      if (data.userId === user._id) {
-        // User read messages in another conversation
-        setConversations((prev) =>
-          prev.map((conv) =>
-            conv.id === data.conversationId ? { ...conv, unreadCount: 0 } : conv
-          )
-        );
-      }
-    });
-
-    newSocket.on("userStatus", (data: UserStatusEvent) => {
-      setConversations((prev) =>
-        prev.map((conv) =>
-          conv.userId === data.userId
-            ? { ...conv, isOnline: data.isOnline }
-            : conv
-        )
-      );
-    });
+          setConversations((prev) =>
+            prev.map((conv) =>
+              conv.id === row.id
+                ? {
+                    ...conv,
+                    lastMessage: row.last_message ?? conv.lastMessage,
+                    lastMessageTime: row.last_message_at ?? conv.lastMessageTime,
+                    unreadCount: unread ?? conv.unreadCount,
+                  }
+                : conv
+            )
+          );
+        }
+      )
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          console.error("📡 conversations channel error:", status);
+        }
+      });
 
     return () => {
-      newSocket.disconnect();
+      supabase.removeChannel(channel);
     };
-  }, [token, user]);
+  }, [user]);
 
   const onRefresh = () => {
     setRefreshing(true);

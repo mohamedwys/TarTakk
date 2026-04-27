@@ -1,5 +1,6 @@
 import { authAPI, userAPI } from "@/lib/api";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { supabase } from "@/lib/supabase";
+import type { Session } from "@supabase/supabase-js";
 import { router } from "expo-router";
 import {
   createContext,
@@ -60,14 +61,57 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const isAuthenticated = !!token && !!user;
   const isVerified = user?.emailVerified ? true : false;
 
+  /**
+   * Mirror a Supabase Session into local state. If a session exists we
+   * fetch the full profile via userAPI.getProfile() so the rest of the
+   * app reads the same legacy `_id`/`location`/`emailVerified` shape it
+   * already expects. If the profile row hasn't been created yet, we fall
+   * back to the fields available on `session.user` directly — no JWT
+   * decoding needed.
+   */
+  const hydrateFromSession = async (session: Session | null) => {
+    if (!session) {
+      setToken(null);
+      setUser(null);
+      return;
+    }
+
+    setToken(session.access_token);
+
+    try {
+      const profileData = await userAPI.getProfile();
+      const fullUser = profileData.user as User | null;
+      if (fullUser && fullUser._id) {
+        setUser(fullUser);
+        return;
+      }
+    } catch (err) {
+      console.error("🚨 Failed to load profile, using session.user:", err);
+    }
+
+    // Fallback: use the typed Supabase auth user. No atob, no manual decode.
+    const authUser = session.user;
+    setUser({
+      _id: authUser.id,
+      name:
+        (authUser.user_metadata?.name as string | undefined) ??
+        authUser.email ??
+        "",
+      email: authUser.email ?? "",
+      emailVerified: authUser.email_confirmed_at
+        ? new Date(authUser.email_confirmed_at)
+        : undefined,
+    });
+  };
+
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
       const data = await authAPI.login({ email, password });
-      await AsyncStorage.setItem("token", data.token);
+      // Supabase auto-persists the session via the SecureStore adapter
+      // configured in lib/supabase.ts — nothing to write to AsyncStorage.
       const profileData = await userAPI.getProfile();
-      const fullUser = profileData.user;
-      await AsyncStorage.setItem("user", JSON.stringify(fullUser));
+      const fullUser = profileData.user as User;
       setUser(fullUser);
       setToken(data.token);
 
@@ -82,112 +126,96 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const logout = async () => {
     setToken(null);
     setUser(null);
-    await AsyncStorage.removeItem("token");
-    await AsyncStorage.removeItem("user");
+    // supabase.auth.signOut() (wrapped by authAPI.logout) clears the
+    // persisted session; the onAuthStateChange listener below also sees
+    // SIGNED_OUT and resets state. No AsyncStorage cleanup needed.
+    try {
+      await authAPI.logout();
+    } catch (err) {
+      console.error("🚨 Sign-out failed:", err);
+    }
     hasCheckedAuth.current = false;
     router.replace("/(auth)/login");
   };
 
   const updateUser = async (updatedUser: User) => {
     setUser(updatedUser);
-    await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+    // userAPI.getProfile() is the source of truth — no local mirror.
   };
 
   const checkAuthState = async () => {
     if (hasCheckedAuth.current) {
-      // console.log("⏭️ Auth already checked, skipping");
       return;
     }
     hasCheckedAuth.current = true;
 
-    // console.log("🔐 Checking auth state...");
-
     try {
-      const storedToken = await AsyncStorage.getItem("token");
-      // console.log("💾 Stored token found:", !!storedToken);
-
-      if (storedToken) {
-        // console.log("🔑 Token preview:", storedToken.substring(0, 30) + "...");
-        setToken(storedToken);
-
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-        // console.log("📞 Fetching user profile...");
-        const profileData = await userAPI.getProfile();
-        const currentUser = profileData.user;
-
-        // console.log("👤 User profile:", currentUser?.email);
-
-        if (!currentUser || !currentUser._id) {
-          console.error("❌ Invalid user data");
-          await AsyncStorage.removeItem("token");
-          await AsyncStorage.removeItem("user");
-          setIsLoading(false);
-          return;
-        }
-
-        // console.log("✅ User authenticated:", currentUser.email);
-        setUser(currentUser);
-      } else {
-        console.log("❌ No stored token found");
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("🚨 getSession failed:", error.message);
+        return;
       }
+
+      if (!data.session) {
+        console.log("❌ No active Supabase session");
+        return;
+      }
+
+      await hydrateFromSession(data.session);
     } catch (error) {
       console.error("🚨 Auth check failed:", error);
-      // ✅ Only clear on auth errors, not network errors
-      if (error instanceof Error && error.message.includes("Authentication required")) {
-        await AsyncStorage.removeItem("token");
-        await AsyncStorage.removeItem("user");
-        setToken(null);
-        setUser(null);
-      }
     } finally {
       setIsLoading(false);
-      // console.log("🏁 Auth check complete");
     }
   };
 
   const reloadAuth = async () => {
-    // console.log("🔄 === RELOAD AUTH STARTED ===");
-    
     hasCheckedAuth.current = false;
     setIsLoading(true);
-    
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    // console.log("📂 Reading token from AsyncStorage...");
-    const storedToken = await AsyncStorage.getItem("token");
-    // console.log("💾 Token found:", !!storedToken);
-    
-    if (storedToken) {
-      // console.log("🔑 Token preview:", storedToken.substring(0, 50) + "...");
-      
-      try {
-        const parts = storedToken.split('.');
-        const payload = JSON.parse(atob(parts[1]));
-        // console.log("📋 Token payload:", {
-        //   userId: payload.userId,
-        //   email: payload.email,
-        //   temp: payload.temp,
-        //   exp: new Date(payload.exp * 1000).toISOString(),
-        //   isExpired: Date.now() > payload.exp * 1000,
-        // });
-      } catch (e) {
-        console.error("❌ Failed to decode token:", e);
-      }
+
+    // Use session.user directly — no manual JWT decode anymore.
+    const { data, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error("❌ getSession failed:", error.message);
+    } else if (data.session) {
+      console.log("📋 Session user:", {
+        userId: data.session.user.id,
+        email: data.session.user.email,
+        expiresAt: data.session.expires_at
+          ? new Date(data.session.expires_at * 1000).toISOString()
+          : null,
+      });
     }
-    
+
     await checkAuthState();
-    
-    // console.log("🔄 === RELOAD AUTH COMPLETED ===");
-    // console.log("📊 Final state:", {
-    //   hasUser: !!user,
-    //   hasToken: !!token,
-    //   userEmail: user?.email,
-    // });
   };
 
   useEffect(() => {
-    checkAuthState();
+    void checkAuthState();
+
+    // React to sign-in / token-refresh / sign-out events from anywhere in
+    // the app (e.g. login.tsx still calls authAPI.login directly). The
+    // listener owns the post-bootstrap state transitions so AuthContext
+    // stays in sync without any AsyncStorage poll loop.
+    const { data: authSubscription } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log("🔐 onAuthStateChange:", event);
+
+        if (event === "SIGNED_OUT") {
+          setToken(null);
+          setUser(null);
+          return;
+        }
+
+        // SIGNED_IN, TOKEN_REFRESHED, USER_UPDATED, INITIAL_SESSION
+        await hydrateFromSession(session);
+      }
+    );
+
+    return () => {
+      authSubscription.subscription.unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const value: AuthContextType = {
@@ -200,7 +228,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     logout,
     updateUser,
     checkAuthState,
-    reloadAuth, 
+    reloadAuth,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

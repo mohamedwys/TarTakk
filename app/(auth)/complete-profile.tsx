@@ -1,5 +1,6 @@
 import AnimatedButton from "@/components/AnimatedButton";
 import { authAPI } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
@@ -30,37 +31,45 @@ export default function CompleteProfileScreen() {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const uploadImage = async (uri: string) => {
-    const formData = new FormData();
-
-    const fileExtension = uri.split(".").pop() || "jpg";
-    const fileName = `profile_${Date.now()}.${fileExtension}`;
-
-    formData.append("file", {
-      uri,
-      type: `image/${fileExtension}`,
-      name: fileName,
-    } as any);
+    // Uploads now go to the Supabase Storage `avatars` bucket. RLS limits
+    // writes to the current authenticated user.
+    const fileExtension = (uri.split(".").pop() || "jpg").toLowerCase();
+    const contentType = `image/${fileExtension === "jpg" ? "jpeg" : fileExtension}`;
 
     try {
-      const response = await fetch(
-        "https://marketplace-backend-blush.vercel.app/api/upload?folder=profiles", // ✅ Updated URL
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Upload failed");
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError || !user) {
+        throw new Error("Not authenticated");
       }
 
-      const data = await response.json();
+      const fileResponse = await fetch(uri);
+      const fileBytes = await fileResponse.arrayBuffer();
+
+      const path = `${user.id}/${Date.now()}_avatar.jpg`;
+      const { data, error } = await supabase.storage
+        .from("avatars")
+        .upload(path, fileBytes, {
+          contentType,
+          upsert: true,
+        });
+
+      if (error || !data) {
+        throw new Error(error?.message ?? "Upload failed");
+      }
+
+      const url = supabase.storage
+        .from("avatars")
+        .getPublicUrl(data.path).data.publicUrl;
+
       Toast.show({
         type: "success",
         text1: "Photo Uploaded",
         text2: "Your profile photo has been uploaded successfully.",
       });
-      return data.url;
+      return url;
     } catch (error) {
       console.error("Image upload error:", error);
       Toast.show({

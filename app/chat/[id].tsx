@@ -1,7 +1,8 @@
 // app/chat/[id].tsx
 import AnimatedButton from "@/components/AnimatedButton";
 import { useAuth } from "@/contexts/AuthContext";
-import { conversationsAPI } from "@/lib/api";
+import { conversationsAPI, messagesAPI } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
@@ -18,7 +19,6 @@ import {
   View,
 } from "react-native";
 import Toast from "react-native-toast-message";
-import io, { Socket } from "socket.io-client";
 
 interface Message {
   id: string;
@@ -42,34 +42,6 @@ interface ProductInfo {
   price: number;
 }
 
-interface MessageEvent {
-  id: string;
-  text: string;
-  senderId: string;
-  timestamp: string;
-  isRead: boolean;
-  conversationId: string;
-}
-
-interface TypingEvent {
-  userId: string;
-  isTyping: boolean;
-}
-
-interface ErrorEvent {
-  message: string;
-}
-
-interface UserStatusEvent {
-  userId: string;
-  isOnline: boolean;
-}
-
-interface ReadReceiptEvent {
-  conversationId: string;
-  userId: string;
-}
-
 export default function ChatScreen() {
   const { id } = useLocalSearchParams() as { id: string };
   const router = useRouter();
@@ -77,7 +49,6 @@ export default function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [socket, setSocket] = useState<Socket | null>(null);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [productInfo, setProductInfo] = useState<ProductInfo | null>(null);
   const flatListRef = useRef<FlatList>(null);
@@ -140,61 +111,65 @@ export default function ChatScreen() {
   }, [id, token, messages.length]);
 
   useEffect(() => {
-    if (!token) return;
+    if (!id) return;
 
-    const newSocket = io("https://marketplace-backend-blush.vercel.app", {
-      auth: { token: token },
-    });
-
-    setSocket(newSocket);
-
-    newSocket.emit("joinConversation", id);
-
-    newSocket.on("message", (message: MessageEvent) => {
-      if (message.conversationId === id) {
-        setMessages((prev) => [...prev, message]);
-        setTimeout(() => {
-          flatListRef.current?.scrollToEnd({ animated: true });
-        }, 100);
-      }
-    });
-
-    newSocket.on("userTyping", (data: TypingEvent) => {
-      console.log("User typing:", data);
-    });
-
-    newSocket.on("messagesRead", (data: ReadReceiptEvent) => {
-      if (data.conversationId === id) {
-        setMessages((prev) =>
-          prev.map((msg) => ({
-            ...msg,
-            isRead: msg.senderId === user?._id ? true : msg.isRead,
-          }))
-        );
-      }
-    });
-
-    newSocket.on("userStatus", (data: UserStatusEvent) => {
-      if (data.userId === userInfo?.id) {
-        setUserInfo((prev) =>
-          prev ? { ...prev, isOnline: data.isOnline } : null
-        );
-      }
-    });
-
-    newSocket.on("connect_error", (error: ErrorEvent) => {
-      console.error("Socket connection error:", error);
-      Toast.show({
-        type: "error",
-        text1: "Connection Error",
-        text2: "Failed to connect to chat server",
+    // Supabase Realtime: listen for new rows in `messages` for this
+    // conversation. RLS already restricts what the client can see, so
+    // there's nothing user-specific to authenticate here.
+    const channel = supabase
+      .channel(`messages:${id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${id}`,
+        },
+        (payload) => {
+          const row = payload.new as {
+            id: string;
+            content: string;
+            sender_id: string;
+            is_read: boolean;
+            created_at: string;
+          };
+          const incoming: Message = {
+            id: row.id,
+            text: row.content,
+            senderId: row.sender_id,
+            isRead: row.is_read ?? false,
+            timestamp: new Date(row.created_at).toLocaleTimeString("en-US", {
+              hour: "numeric",
+              minute: "2-digit",
+            }),
+          };
+          // De-dupe: handleSend already appends the freshly-inserted row
+          // synchronously, so the realtime echo would otherwise create a
+          // duplicate.
+          setMessages((prev) =>
+            prev.some((m) => m.id === incoming.id) ? prev : [...prev, incoming]
+          );
+          setTimeout(() => {
+            flatListRef.current?.scrollToEnd({ animated: true });
+          }, 100);
+        }
+      )
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          console.error("📡 messages channel error:", status, id);
+          Toast.show({
+            type: "error",
+            text1: "Connection Error",
+            text2: "Failed to connect to chat server",
+          });
+        }
       });
-    });
 
     return () => {
-      newSocket.disconnect();
+      supabase.removeChannel(channel);
     };
-  }, [id, token, user?._id]);
+  }, [id]);
 
   const handlePayment = async (method: string) => {
     setProcessingPayment(true);
@@ -224,36 +199,42 @@ export default function ChatScreen() {
   };
 
   const handleSend = async () => {
-    if (!inputText.trim() || !socket || !user) return;
+    if (!inputText.trim() || !user) return;
 
+    const trimmed = inputText.trim();
     setIsSending(true);
+    setInputText("");
     try {
-      const messageData = {
+      const { message } = await messagesAPI.sendMessage({
         conversationId: id,
-        content: inputText.trim(),
+        content: trimmed,
+      });
+
+      // Append immediately so the sender sees their message without
+      // waiting for the realtime echo. The realtime listener de-dupes
+      // by id when its INSERT event arrives.
+      const sent: Message = {
+        id: message.id,
+        text: message.text ?? message.content ?? trimmed,
+        senderId: message.senderId ?? user._id,
+        isRead: message.isRead ?? false,
+        timestamp:
+          message.timestamp ??
+          new Date().toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+          }),
       };
-
-      socket.emit("sendMessage", messageData);
-
-      const optimisticMessage: Message = {
-        id: Date.now().toString(),
-        text: inputText.trim(),
-        senderId: user._id,
-        timestamp: new Date().toLocaleTimeString("en-US", {
-          hour: "numeric",
-          minute: "2-digit",
-        }),
-        isRead: false,
-      };
-
-      setMessages((prev) => [...prev, optimisticMessage]);
-      setInputText("");
+      setMessages((prev) =>
+        prev.some((m) => m.id === sent.id) ? prev : [...prev, sent]
+      );
 
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
       }, 100);
     } catch (error) {
       console.error("Failed to send message:", error);
+      setInputText(trimmed); // restore the draft so the user can retry
       Toast.show({
         type: "error",
         text1: "Error",
