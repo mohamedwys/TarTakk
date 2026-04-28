@@ -359,9 +359,13 @@ export const notificationsAPI = {
 type AnyRow = Record<string, any>;
 
 const requireUserId = async (): Promise<string> => {
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data?.user) throw new Error("Not authenticated");
-  return data.user.id;
+  // getSession() reads from the SecureStore-backed local cache; no
+  // network round-trip. getUser() hits Supabase to verify the JWT and
+  // can hang on flaky networks, which used to wedge AuthContext's
+  // hydrateFromSession behind a slow round-trip.
+  const { data, error } = await supabase.auth.getSession();
+  if (error || !data?.session?.user) throw new Error("Not authenticated");
+  return data.session.user.id;
 };
 
 // ---------------------------------------------------------------
@@ -865,15 +869,20 @@ export const userAPI = {
   getProfile: async () => {
     console.log("👤 supabase getProfile");
 
-    const { data: authData, error: authError } = await supabase.auth.getUser();
-    if (authError || !authData?.user) {
+    // Read from the local session cache — getUser() would force a
+    // remote JWT verification round-trip that was wedging the auth
+    // bootstrap on slow networks.
+    const { data: sessionData, error: sessionError } =
+      await supabase.auth.getSession();
+    if (sessionError || !sessionData?.session?.user) {
       throw new Error("Not authenticated");
     }
+    const authUser = sessionData.session.user;
 
     const { data, error } = await supabase
       .from("profiles")
       .select(PROFILE_WITH_REGION)
-      .eq("id", authData.user.id)
+      .eq("id", authUser.id)
       .single();
 
     if (error) {
@@ -881,7 +890,7 @@ export const userAPI = {
       throw new Error(error.message);
     }
 
-    return { user: fromProfileRow(data as AnyRow, authData.user) };
+    return { user: fromProfileRow(data as AnyRow, authUser) };
   },
 
   /**

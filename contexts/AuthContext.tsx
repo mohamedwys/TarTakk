@@ -66,14 +66,46 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const isVerified = !!session?.user?.email_confirmed_at;
 
   /**
-   * Mirror a Supabase Session into local state. If a session exists we
-   * fetch the full profile via userAPI.getProfile() so the rest of the
-   * app reads the same legacy `_id`/`location`/`emailVerified` shape it
-   * already expects. If the profile row hasn't been created yet, we fall
-   * back to the fields available on `session.user` directly — no JWT
-   * decoding needed.
+   * Build a baseline User from the Supabase auth user. Avatar / phone /
+   * bio are unknown at this point — the full profile fills those in.
    */
-  const hydrateFromSession = async (session: Session | null) => {
+  const userFromAuth = (authUser: Session["user"]): User => ({
+    _id: authUser.id,
+    name:
+      (authUser.user_metadata?.name as string | undefined) ??
+      authUser.email ??
+      "",
+    email: authUser.email ?? "",
+    emailVerified: authUser.email_confirmed_at
+      ? new Date(authUser.email_confirmed_at)
+      : undefined,
+  });
+
+  /**
+   * Fetch the full profile and replace the baseline user with it. Runs
+   * fire-and-forget so a slow or failing /profiles request never blocks
+   * the loading state. If it fails the baseline user from `session.user`
+   * is what stays in state — the user is still effectively logged in.
+   */
+  const enrichUserFromProfile = async () => {
+    try {
+      const profileData = await userAPI.getProfile();
+      const fullUser = profileData.user as User | null;
+      if (fullUser && fullUser._id) {
+        setUser(fullUser);
+      }
+    } catch (err) {
+      console.error("🚨 Failed to enrich profile, keeping session.user:", err);
+    }
+  };
+
+  /**
+   * Mirror a Supabase Session into local state. We populate user/token
+   * synchronously from session.user so the UI can render right away,
+   * then trigger profile enrichment in the background. Returning quickly
+   * means a stalled `getProfile()` call never holds isLoading=true.
+   */
+  const hydrateFromSession = (session: Session | null) => {
     setSession(session);
     if (!session) {
       setToken(null);
@@ -83,30 +115,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     setToken(session.access_token);
 
-    try {
-      const profileData = await userAPI.getProfile();
-      const fullUser = profileData.user as User | null;
-      if (fullUser && fullUser._id) {
-        setUser(fullUser);
-        return;
-      }
-    } catch (err) {
-      console.error("🚨 Failed to load profile, using session.user:", err);
-    }
+    // Replace the baseline user only if it's a different user (or
+    // there isn't one yet). Avoids overwriting an enriched profile
+    // when a token-refresh event comes through later.
+    setUser((prev) =>
+      prev && prev._id === session.user.id ? prev : userFromAuth(session.user)
+    );
 
-    // Fallback: use the typed Supabase auth user. No atob, no manual decode.
-    const authUser = session.user;
-    setUser({
-      _id: authUser.id,
-      name:
-        (authUser.user_metadata?.name as string | undefined) ??
-        authUser.email ??
-        "",
-      email: authUser.email ?? "",
-      emailVerified: authUser.email_confirmed_at
-        ? new Date(authUser.email_confirmed_at)
-        : undefined,
-    });
+    void enrichUserFromProfile();
   };
 
   const login = async (email: string, password: string) => {
@@ -115,11 +131,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const data = await authAPI.login({ email, password });
       // Supabase auto-persists the session via the SecureStore adapter
       // configured in lib/supabase.ts — nothing to write to AsyncStorage.
-      const profileData = await userAPI.getProfile();
-      const fullUser = profileData.user as User;
-      setUser(fullUser);
-      setToken(data.token);
-
+      // Hydrate from the freshly-returned session synchronously and let
+      // the profile fetch happen in the background.
+      hydrateFromSession(data.session);
       return { success: true };
     } catch (error: any) {
       return { success: false, error: error.message };
@@ -166,10 +180,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return;
       }
 
-      await hydrateFromSession(data.session);
+      hydrateFromSession(data.session);
     } catch (error) {
       console.error("🚨 Auth check failed:", error);
     } finally {
+      // Always release the loader, even if the early-return branches
+      // skipped the await above. This guarantees the login screen
+      // becomes reachable as soon as we know the session state.
       setIsLoading(false);
     }
   };
@@ -214,7 +231,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
 
         // SIGNED_IN, TOKEN_REFRESHED, USER_UPDATED, INITIAL_SESSION
-        await hydrateFromSession(session);
+        hydrateFromSession(session);
       }
     );
 
