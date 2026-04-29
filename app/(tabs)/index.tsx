@@ -11,6 +11,7 @@ import { useEnv } from "@/src/env";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   Modal,
@@ -37,6 +38,7 @@ const conditions = ["New", "Like New", "Good", "Fair"];
 export default function HomeScreen() {
   const router = useRouter();
   const { config } = useEnv();
+  const { t } = useTranslation();
   const [refreshing, setRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -231,12 +233,12 @@ export default function HomeScreen() {
         <View>
           <Text style={styles.greeting}>
             {userLoading
-              ? "Hello 👋"
+              ? t("home.greeting", { name: "" })
               : user
-              ? `Hello ${user.name} 👋`
-              : "Hello 👋"}
+              ? t("home.greeting", { name: user.name })
+              : t("home.greeting", { name: "" })}
           </Text>
-          <Text style={styles.headerTitle}>Find Your Perfect Item</Text>
+          <Text style={styles.headerTitle}>{t("home.tagline")}</Text>
         </View>
         <TouchableOpacity
           style={styles.notificationButton}
@@ -290,9 +292,9 @@ export default function HomeScreen() {
         {/* Categories */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Categories</Text>
+            <Text style={styles.sectionTitle}>{t("home.categories")}</Text>
             <TouchableOpacity onPress={handleSeeAllCategories}>
-              <Text style={styles.seeAll}>See All</Text>
+              <Text style={styles.seeAll}>{t("home.seeAll")}</Text>
             </TouchableOpacity>
           </View>
 
@@ -331,9 +333,9 @@ export default function HomeScreen() {
         {/* Featured Products */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Featured Products</Text>
+            <Text style={styles.sectionTitle}>{t("home.featuredProducts")}</Text>
             <TouchableOpacity onPress={handleSeeAllFeatured}>
-              <Text style={styles.seeAll}>See All</Text>
+              <Text style={styles.seeAll}>{t("home.seeAll")}</Text>
             </TouchableOpacity>
           </View>
 
@@ -368,9 +370,9 @@ export default function HomeScreen() {
               // Show empty state
               <View style={styles.emptyContainer}>
                 <Ionicons name="storefront-outline" size={48} color="#B2BEC3" />
-                <Text style={styles.emptyText}>No products available</Text>
+                <Text style={styles.emptyText}>{t("home.noProducts")}</Text>
                 <Text style={styles.emptySubtext}>
-                  Check back later for new listings
+                  {t("home.checkBackLater")}
                 </Text>
               </View>
             ) : (
@@ -385,6 +387,7 @@ export default function HomeScreen() {
                     id={product.id}
                     title={product.title}
                     price={product.price}
+                    currency={product.currency || "MAD"}
                     image={product.images?.[0] || ""}
                     location={`${product.location?.city}, ${product.location?.state}`}
                     condition={product.condition}

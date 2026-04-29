@@ -9,6 +9,7 @@ import {
   LayoutAnimation,
   Modal,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Switch,
@@ -18,6 +19,7 @@ import {
   UIManager,
   View,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 import Toast from "react-native-toast-message";
 
 if (
@@ -29,6 +31,7 @@ if (
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const { i18n: i18nInstance } = useTranslation();
 
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -39,6 +42,14 @@ export default function SettingsScreen() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [currentLang, setCurrentLang] = useState<string>(
+    i18nInstance.language || "fr"
+  );
+
+  const handleLanguageChange = (lang: "fr" | "ar" | "en") => {
+    i18nInstance.changeLanguage(lang);
+    setCurrentLang(lang);
+  };
 
   const [expandedSections, setExpandedSections] = useState({
     account: true,
@@ -238,6 +249,70 @@ const handleLogout = async () => {
               </TouchableOpacity>
             </View>
           )}
+        </View>
+
+        {/* Language Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionHeaderLeft}>
+              <View style={[styles.sectionIcon, { backgroundColor: "#FFB84D" }]}>
+                <Ionicons name="language-outline" size={20} color="#fff" />
+              </View>
+              <Text style={styles.sectionTitle}>
+                Langue / اللغة / Language
+              </Text>
+            </View>
+          </View>
+          <View style={styles.languageOptions}>
+            <Pressable
+              style={[
+                styles.langButton,
+                currentLang === "fr" && styles.langButtonActive,
+              ]}
+              onPress={() => handleLanguageChange("fr")}
+            >
+              <Text
+                style={[
+                  styles.langButtonText,
+                  currentLang === "fr" && styles.langButtonTextActive,
+                ]}
+              >
+                🇫🇷 Français
+              </Text>
+            </Pressable>
+            <Pressable
+              style={[
+                styles.langButton,
+                currentLang === "ar" && styles.langButtonActive,
+              ]}
+              onPress={() => handleLanguageChange("ar")}
+            >
+              <Text
+                style={[
+                  styles.langButtonText,
+                  currentLang === "ar" && styles.langButtonTextActive,
+                ]}
+              >
+                🇲🇦 العربية
+              </Text>
+            </Pressable>
+            <Pressable
+              style={[
+                styles.langButton,
+                currentLang === "en" && styles.langButtonActive,
+              ]}
+              onPress={() => handleLanguageChange("en")}
+            >
+              <Text
+                style={[
+                  styles.langButtonText,
+                  currentLang === "en" && styles.langButtonTextActive,
+                ]}
+              >
+                🇬🇧 English
+              </Text>
+            </Pressable>
+          </View>
         </View>
 
         {/* Notifications Section */}
@@ -650,6 +725,37 @@ const styles = StyleSheet.create({
   },
   bottomSpacing: {
     height: 40,
+  },
+  languageOptions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  langButton: {
+    flex: 1,
+    minWidth: 90,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: "#F5F5F5",
+    borderWidth: 2,
+    borderColor: "transparent",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  langButtonActive: {
+    backgroundColor: "#E5F9F8",
+    borderColor: "#4ECDC4",
+  },
+  langButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#636E72",
+  },
+  langButtonTextActive: {
+    color: "#4ECDC4",
   },
   // Modal styles
   modalContainer: {

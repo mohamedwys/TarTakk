@@ -1,4 +1,5 @@
 import { safeUri } from "@/lib/utils/image";
+import { formatPrice } from "@/src/utils/currency";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { MotiView } from "moti";
@@ -15,6 +16,7 @@ interface ProductCardProps {
   id: string;
   title: string;
   price: number;
+  currency?: string;
   image: string;
   location: string;
   condition?: "New" | "Used";
@@ -27,6 +29,7 @@ export default function ProductCard({
   id,
   title,
   price,
+  currency = "MAD",
   image,
   location,
   condition = "Used",
@@ -220,7 +223,7 @@ export default function ProductCard({
                 damping: 12,
               }}
             >
-              <Text style={styles.price}>₦{price.toLocaleString()}</Text>
+              <Text style={styles.price}>{formatPrice(price, currency)}</Text>
             </MotiView>
           </View>
         </TouchableOpacity>
