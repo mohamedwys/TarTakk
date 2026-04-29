@@ -1,6 +1,7 @@
 import AnimatedTabIcon from '@/components/AnimatedTabIcon';
 import { BadgePulse } from '@/components/BadgeBounce';
 import { useUnreadCount } from '@/contexts/UnreadCountContext';
+import { useCart } from '@/src/cart';
 import { EnvSwitcher } from '@/src/components/env/EnvSwitcher';
 import { useEnv } from '@/src/env';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
   const { totalUnreadCount } = useUnreadCount();
+  const { totalItems } = useCart();
   const { config, current } = useEnv();
   const { t } = useTranslation();
   const router = useRouter();
@@ -111,6 +113,14 @@ export default function TabLayout() {
               <Ionicons name="cart-outline" size={size} color={color} />
             ),
             href: current === 'b2c_pro' ? '/(tabs)/cart' : null,
+            tabBarBadge: totalItems > 0 ? totalItems : undefined,
+            tabBarBadgeStyle: {
+              backgroundColor: config.theme.error,
+              color: '#FFFFFF',
+              fontSize: 10,
+              minWidth: 18,
+              height: 18,
+            },
           }}
         />
         <Tabs.Screen

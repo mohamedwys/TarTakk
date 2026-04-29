@@ -200,6 +200,24 @@
   },
   "cart": {
     "title": "Your Cart",
-    "comingSoon": "Coming soon — Shop Pro checkout will be available here."
+    "comingSoon": "Coming soon — Shop Pro checkout will be available here.",
+    "myCart": "My Cart",
+    "emptyTitle": "Your cart is empty",
+    "emptySubtitle": "Add Shop Pro products to start shopping",
+    "browseShopPro": "Browse Shop Pro",
+    "subtotal": "Subtotal",
+    "shippingFee": "Shipping fee",
+    "tax": "Tax",
+    "total": "Total",
+    "proceedToCheckout": "Proceed to checkout",
+    "removeItem": "Remove from cart",
+    "clearCart": "Clear cart",
+    "clearCartConfirm": "Are you sure you want to clear your cart?",
+    "addedToCart": "Added to cart",
+    "addToCartFailed": "Failed to add to cart",
+    "outOfStockReached": "Max stock reached",
+    "loadFailed": "Failed to load cart",
+    "items_one": "{{count}} item",
+    "items_other": "{{count}} items"
   }
 }

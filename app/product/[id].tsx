@@ -10,6 +10,7 @@ import {
   reviewsAPI,
 } from "@/lib/api";
 import { filterImages, safeUri } from "@/lib/utils/image";
+import { useCart } from "@/src/cart";
 import { useEnv } from "@/src/env";
 import { formatPrice } from "@/src/utils/currency";
 import { Ionicons } from "@expo/vector-icons";
@@ -39,6 +40,7 @@ const { width } = Dimensions.get("window");
 
 export default function ProductDetailScreen() {
   const { user: currentUser } = useAuth();
+  const { addItem } = useCart();
   const { config } = useEnv();
   const { t } = useTranslation();
   const { id } = useLocalSearchParams();
@@ -345,8 +347,29 @@ export default function ProductDetailScreen() {
     router.push(`/chat/${sellerId}` as any);
   };
 
-  const handleAddToCart = () => {
-    Alert.alert(t("product.comingSoon"), t("product.cartComingSoon"));
+  const handleAddToCart = async () => {
+    if (!currentUser) {
+      Alert.alert(t("product.loginRequired"));
+      return;
+    }
+    if (isOutOfStock) {
+      Toast.show({ type: "error", text1: t("product.outOfStock") });
+      return;
+    }
+    const result = await addItem(product.id, 1);
+    if (result.success) {
+      Toast.show({
+        type: "success",
+        text1: t("cart.addedToCart"),
+        text2: product.title,
+      });
+    } else {
+      Toast.show({
+        type: "error",
+        text1: t("cart.addToCartFailed"),
+        text2: result.error,
+      });
+    }
   };
 
   const handleBuyNow = () => {

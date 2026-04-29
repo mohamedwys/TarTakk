@@ -200,6 +200,24 @@
   },
   "cart": {
     "title": "Votre panier",
-    "comingSoon": "Bientôt disponible — Le checkout Shop Pro sera bientôt disponible ici."
+    "comingSoon": "Bientôt disponible — Le checkout Shop Pro sera bientôt disponible ici.",
+    "myCart": "Mon Panier",
+    "emptyTitle": "Votre panier est vide",
+    "emptySubtitle": "Ajoutez des produits Shop Pro pour commencer vos achats",
+    "browseShopPro": "Parcourir Shop Pro",
+    "subtotal": "Sous-total",
+    "shippingFee": "Frais de livraison",
+    "tax": "TVA",
+    "total": "Total",
+    "proceedToCheckout": "Procéder au paiement",
+    "removeItem": "Retirer du panier",
+    "clearCart": "Vider le panier",
+    "clearCartConfirm": "Voulez-vous vraiment vider votre panier ?",
+    "addedToCart": "Ajouté au panier",
+    "addToCartFailed": "Échec de l'ajout au panier",
+    "outOfStockReached": "Stock maximum atteint",
+    "loadFailed": "Impossible de charger le panier",
+    "items_one": "{{count}} article",
+    "items_other": "{{count}} articles"
   }
 }

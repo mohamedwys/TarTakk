@@ -200,6 +200,24 @@
   },
   "cart": {
     "title": "السلة",
-    "comingSoon": "قريبا — سيكون دفع Shop Pro متاحا هنا."
+    "comingSoon": "قريبا — سيكون دفع Shop Pro متاحا هنا.",
+    "myCart": "سلتي",
+    "emptyTitle": "السلة فارغة",
+    "emptySubtitle": "أضف منتجات Shop Pro لبدء التسوق",
+    "browseShopPro": "تصفح Shop Pro",
+    "subtotal": "المجموع الفرعي",
+    "shippingFee": "رسوم التوصيل",
+    "tax": "ضريبة القيمة المضافة",
+    "total": "المجموع",
+    "proceedToCheckout": "متابعة الدفع",
+    "removeItem": "إزالة من السلة",
+    "clearCart": "تفريغ السلة",
+    "clearCartConfirm": "هل أنت متأكد من تفريغ السلة؟",
+    "addedToCart": "تمت الإضافة إلى السلة",
+    "addToCartFailed": "فشل الإضافة إلى السلة",
+    "outOfStockReached": "تم الوصول إلى الحد الأقصى للمخزون",
+    "loadFailed": "تعذر تحميل السلة",
+    "items_one": "{{count}} منتج",
+    "items_other": "{{count}} منتجات"
   }
 }
