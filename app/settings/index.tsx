@@ -1,4 +1,5 @@
 import { authAPI } from "@/lib/api";
+import { useEnv } from "@/src/env";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
@@ -31,6 +32,8 @@ if (
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const { config } = useEnv();
+  const theme = config.theme;
   const { i18n: i18nInstance } = useTranslation();
 
   const [pushNotifications, setPushNotifications] = useState(true);
@@ -158,15 +161,15 @@ const handleLogout = async () => {
     color: string
   ) => (
     <TouchableOpacity
-      style={styles.sectionHeader}
+      style={[styles.sectionHeader, { borderBottomColor: theme.border }]}
       onPress={() => toggleSection(section)}
       activeOpacity={0.7}
     >
       <View style={styles.sectionHeaderLeft}>
         <View style={[styles.sectionIcon, { backgroundColor: color }]}>
-          <Ionicons name={icon as any} size={20} color="#fff" />
+          <Ionicons name={icon as any} size={20} color={theme.textInverse} />
         </View>
-        <Text style={styles.sectionTitle}>{title}</Text>
+        <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>{title}</Text>
       </View>
       <Animated.View
         style={{
@@ -177,88 +180,88 @@ const handleLogout = async () => {
           ],
         }}
       >
-        <Ionicons name="chevron-forward" size={20} color="#B2BEC3" />
+        <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
       </Animated.View>
     </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color="#2D3436" />
+          <Ionicons name="arrow-back" size={24} color={theme.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Settings</Text>
+        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Settings</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Account Section */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: theme.surface }]}>
           {renderSectionHeader(
             "Account",
             "account",
             "person-outline",
-            "#4ECDC4"
+            theme.primary
           )}
 
           {expandedSections.account && (
-            <View style={styles.sectionContent}>
+            <View style={[styles.sectionContent, { borderBottomColor: theme.border }]}>
               <TouchableOpacity
-                style={styles.settingItem}
+                style={[styles.settingItem, { borderBottomColor: theme.border }]}
                 onPress={() => router.push("/profile/edit")}
               >
                 <View style={styles.settingLeft}>
                   <View
                     style={[
                       styles.iconContainer,
-                      { backgroundColor: "#E5F9F8" },
+                      { backgroundColor: theme.background },
                     ]}
                   >
-                    <Ionicons name="person-outline" size={22} color="#4ECDC4" />
+                    <Ionicons name="person-outline" size={22} color={theme.primary} />
                   </View>
-                  <Text style={styles.settingText}>Edit Profile</Text>
+                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>Edit Profile</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#B2BEC3" />
+                <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.settingItem}
+                style={[styles.settingItem, { borderBottomColor: theme.border }]}
                 onPress={() => setPasswordModalVisible(true)}
               >
                 <View style={styles.settingLeft}>
                   <View
                     style={[
                       styles.iconContainer,
-                      { backgroundColor: "#FFF4E6" },
+                      { backgroundColor: theme.background },
                     ]}
                   >
                     <Ionicons
                       name="lock-closed-outline"
                       size={22}
-                      color="#FFB84D"
+                      color={theme.warning}
                     />
                   </View>
-                  <Text style={styles.settingText}>Change Password</Text>
+                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>Change Password</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#B2BEC3" />
+                <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
               </TouchableOpacity>
             </View>
           )}
         </View>
 
         {/* Language Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
+        <View style={[styles.section, { backgroundColor: theme.surface }]}>
+          <View style={[styles.sectionHeader, { borderBottomColor: theme.border }]}>
             <View style={styles.sectionHeaderLeft}>
-              <View style={[styles.sectionIcon, { backgroundColor: "#FFB84D" }]}>
-                <Ionicons name="language-outline" size={20} color="#fff" />
+              <View style={[styles.sectionIcon, { backgroundColor: theme.warning }]}>
+                <Ionicons name="language-outline" size={20} color={theme.textInverse} />
               </View>
-              <Text style={styles.sectionTitle}>
+              <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
                 Langue / اللغة / Language
               </Text>
             </View>
@@ -267,14 +270,19 @@ const handleLogout = async () => {
             <Pressable
               style={[
                 styles.langButton,
-                currentLang === "fr" && styles.langButtonActive,
+                { backgroundColor: theme.background, borderColor: "transparent" },
+                currentLang === "fr" && {
+                  backgroundColor: theme.primary,
+                  borderColor: theme.primaryDark,
+                },
               ]}
               onPress={() => handleLanguageChange("fr")}
             >
               <Text
                 style={[
                   styles.langButtonText,
-                  currentLang === "fr" && styles.langButtonTextActive,
+                  { color: theme.textPrimary },
+                  currentLang === "fr" && { color: theme.textInverse },
                 ]}
               >
                 🇫🇷 Français
@@ -283,14 +291,19 @@ const handleLogout = async () => {
             <Pressable
               style={[
                 styles.langButton,
-                currentLang === "ar" && styles.langButtonActive,
+                { backgroundColor: theme.background, borderColor: "transparent" },
+                currentLang === "ar" && {
+                  backgroundColor: theme.primary,
+                  borderColor: theme.primaryDark,
+                },
               ]}
               onPress={() => handleLanguageChange("ar")}
             >
               <Text
                 style={[
                   styles.langButtonText,
-                  currentLang === "ar" && styles.langButtonTextActive,
+                  { color: theme.textPrimary },
+                  currentLang === "ar" && { color: theme.textInverse },
                 ]}
               >
                 🇲🇦 العربية
@@ -299,14 +312,19 @@ const handleLogout = async () => {
             <Pressable
               style={[
                 styles.langButton,
-                currentLang === "en" && styles.langButtonActive,
+                { backgroundColor: theme.background, borderColor: "transparent" },
+                currentLang === "en" && {
+                  backgroundColor: theme.primary,
+                  borderColor: theme.primaryDark,
+                },
               ]}
               onPress={() => handleLanguageChange("en")}
             >
               <Text
                 style={[
                   styles.langButtonText,
-                  currentLang === "en" && styles.langButtonTextActive,
+                  { color: theme.textPrimary },
+                  currentLang === "en" && { color: theme.textInverse },
                 ]}
               >
                 🇬🇧 English
@@ -316,81 +334,81 @@ const handleLogout = async () => {
         </View>
 
         {/* Notifications Section */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: theme.surface }]}>
           {renderSectionHeader(
             "Notifications",
             "notifications",
             "notifications-outline",
-            "#FF6B6B"
+            theme.accent
           )}
 
           {expandedSections.notifications && (
-            <View style={styles.sectionContent}>
-              <View style={styles.settingItem}>
+            <View style={[styles.sectionContent, { borderBottomColor: theme.border }]}>
+              <View style={[styles.settingItem, { borderBottomColor: theme.border }]}>
                 <View style={styles.settingLeft}>
                   <View
                     style={[
                       styles.iconContainer,
-                      { backgroundColor: "#FFE5E5" },
+                      { backgroundColor: theme.background },
                     ]}
                   >
                     <Ionicons
                       name="notifications-outline"
                       size={22}
-                      color="#FF6B6B"
+                      color={theme.accent}
                     />
                   </View>
-                  <Text style={styles.settingText}>Push Notifications</Text>
+                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>Push Notifications</Text>
                 </View>
                 <Switch
                   value={pushNotifications}
                   onValueChange={setPushNotifications}
-                  trackColor={{ false: "#E5E5EA", true: "#4ECDC4" }}
-                  thumbColor="#fff"
+                  trackColor={{ false: theme.border, true: theme.primary }}
+                  thumbColor={theme.textInverse}
                 />
               </View>
 
-              <View style={styles.settingItem}>
+              <View style={[styles.settingItem, { borderBottomColor: theme.border }]}>
                 <View style={styles.settingLeft}>
                   <View
                     style={[
                       styles.iconContainer,
-                      { backgroundColor: "#E5F9F8" },
+                      { backgroundColor: theme.background },
                     ]}
                   >
-                    <Ionicons name="mail-outline" size={22} color="#4ECDC4" />
+                    <Ionicons name="mail-outline" size={22} color={theme.primary} />
                   </View>
-                  <Text style={styles.settingText}>Email Notifications</Text>
+                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>Email Notifications</Text>
                 </View>
                 <Switch
                   value={emailNotifications}
                   onValueChange={setEmailNotifications}
-                  trackColor={{ false: "#E5E5EA", true: "#4ECDC4" }}
-                  thumbColor="#fff"
+                  trackColor={{ false: theme.border, true: theme.primary }}
+                  thumbColor={theme.textInverse}
                 />
               </View>
 
-              <View style={styles.settingItem}>
+              <View style={[styles.settingItem, { borderBottomColor: theme.border }]}>
                 <View style={styles.settingLeft}>
                   <View
                     style={[
                       styles.iconContainer,
-                      { backgroundColor: "#F3E5F5" },
+                      { backgroundColor: theme.background },
                     ]}
                   >
                     <Ionicons
                       name="chatbubble-outline"
                       size={22}
-                      color="#A29BFE"
+                      color={theme.primary}
                     />
                   </View>
-                  <Text style={styles.settingText}>Message Notifications</Text>
+                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>Message Notifications</Text>
                 </View>
                 <Switch
                   value={messageNotifications}
                   onValueChange={setMessageNotifications}
-                  trackColor={{ false: "#E5E5EA", true: "#4ECDC4" }}
-                  thumbColor="#fff"
+                  trackColor={{ false: theme.border, true: theme.primary }}
+                  thumbColor={theme.textInverse}
                 />
               </View>
             </View>
@@ -398,129 +416,132 @@ const handleLogout = async () => {
         </View>
 
         {/* Privacy Section */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: theme.surface }]}>
           {renderSectionHeader(
             "Privacy",
             "privacy",
             "shield-checkmark-outline",
-            "#A29BFE"
+            theme.primaryDark
           )}
 
           {expandedSections.privacy && (
-            <View style={styles.sectionContent}>
+            <View style={[styles.sectionContent, { borderBottomColor: theme.border }]}>
               <TouchableOpacity
-                style={styles.settingItem}
+                style={[styles.settingItem, { borderBottomColor: theme.border }]}
                 onPress={() => router.push("/(legal)/privacy")}
               >
                 <View style={styles.settingLeft}>
                   <View
                     style={[
                       styles.iconContainer,
-                      { backgroundColor: "#F3E5F5" },
+                      { backgroundColor: theme.background },
                     ]}
                   >
                     <Ionicons
                       name="shield-checkmark-outline"
                       size={22}
-                      color="#A29BFE"
+                      color={theme.primaryDark}
                     />
                   </View>
-                  <Text style={styles.settingText}>Privacy Policy</Text>
+                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>Privacy Policy</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#B2BEC3" />
+                <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.settingItem}
+                style={[styles.settingItem, { borderBottomColor: theme.border }]}
                 onPress={() => router.push("/(legal)/terms")}
               >
                 <View style={styles.settingLeft}>
                   <View
                     style={[
                       styles.iconContainer,
-                      { backgroundColor: "#E5F9F8" },
+                      { backgroundColor: theme.background },
                     ]}
                   >
                     <Ionicons
                       name="document-text-outline"
                       size={22}
-                      color="#4ECDC4"
+                      color={theme.primary}
                     />
                   </View>
-                  <Text style={styles.settingText}>Terms of Service</Text>
+                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>Terms of Service</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#B2BEC3" />
+                <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
               </TouchableOpacity>
             </View>
           )}
         </View>
 
         {/* Support Section */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: theme.surface }]}>
           {renderSectionHeader(
             "Support",
             "support",
             "help-circle-outline",
-            "#4ECDC4"
+            theme.primary
           )}
 
           {expandedSections.support && (
-            <View style={styles.sectionContent}>
+            <View style={[styles.sectionContent, { borderBottomColor: theme.border }]}>
               <TouchableOpacity
-                style={styles.settingItem}
+                style={[styles.settingItem, { borderBottomColor: theme.border }]}
                 onPress={() => router.push("/help")}
               >
                 <View style={styles.settingLeft}>
                   <View
                     style={[
                       styles.iconContainer,
-                      { backgroundColor: "#E5F9F8" },
+                      { backgroundColor: theme.background },
                     ]}
                   >
                     <Ionicons
                       name="help-circle-outline"
                       size={22}
-                      color="#4ECDC4"
+                      color={theme.primary}
                     />
                   </View>
-                  <Text style={styles.settingText}>Help Center</Text>
+                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>Help Center</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#B2BEC3" />
+                <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.settingItem}
+                style={[styles.settingItem, { borderBottomColor: theme.border }]}
                 onPress={() => router.push("/contact-us")}
               >
                 <View style={styles.settingLeft}>
                   <View
                     style={[
                       styles.iconContainer,
-                      { backgroundColor: "#F3E5F5" },
+                      { backgroundColor: theme.background },
                     ]}
                   >
-                    <Ionicons name="mail-outline" size={22} color="#A29BFE" />
+                    <Ionicons name="mail-outline" size={22} color={theme.primaryDark} />
                   </View>
-                  <Text style={styles.settingText}>Contact Us</Text>
+                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>Contact Us</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#B2BEC3" />
+                <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
               </TouchableOpacity>
             </View>
           )}
         </View>
 
         {/* Logout Section */}
-        <View style={styles.section}>
-          <TouchableOpacity style={styles.settingItem} onPress={handleLogout}>
+        <View style={[styles.section, { backgroundColor: theme.surface }]}>
+          <TouchableOpacity
+            style={[styles.settingItem, { borderBottomColor: theme.border }]}
+            onPress={handleLogout}
+          >
             <View style={styles.settingLeft}>
               <View
-                style={[styles.iconContainer, { backgroundColor: "#FFF4E6" }]}
+                style={[styles.iconContainer, { backgroundColor: theme.background }]}
               >
-                <Ionicons name="log-out-outline" size={22} color="#FFB84D" />
+                <Ionicons name="log-out-outline" size={22} color={theme.error} />
               </View>
-              <Text style={styles.settingText}>Logout</Text>
+              <Text style={[styles.settingText, { color: theme.error }]}>Logout</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#B2BEC3" />
+            <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
           </TouchableOpacity>
         </View>
 
@@ -535,15 +556,15 @@ const handleLogout = async () => {
         presentationStyle="pageSheet"
         onRequestClose={() => setPasswordModalVisible(false)}
       >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
+        <View style={[styles.modalContainer, { backgroundColor: theme.background }]}>
+          <View style={[styles.modalHeader, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
             <TouchableOpacity
               style={styles.modalBackButton}
               onPress={() => setPasswordModalVisible(false)}
             >
-              <Ionicons name="close" size={24} color="#2D3436" />
+              <Ionicons name="close" size={24} color={theme.textPrimary} />
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>Change Password</Text>
+            <Text style={[styles.modalTitle, { color: theme.textPrimary }]}>Change Password</Text>
             <View style={{ width: 40 }} />
           </View>
 
@@ -552,16 +573,17 @@ const handleLogout = async () => {
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Current Password</Text>
-              <View style={styles.inputContainer}>
+              <Text style={[styles.inputLabel, { color: theme.textPrimary }]}>Current Password</Text>
+              <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
                 <Ionicons
                   name="lock-closed-outline"
                   size={20}
-                  color="#B2BEC3"
+                  color={theme.textSecondary}
                 />
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: theme.textPrimary }]}
                   placeholder="Enter current password"
+                  placeholderTextColor={theme.textSecondary}
                   value={currentPassword}
                   onChangeText={setCurrentPassword}
                   secureTextEntry
@@ -571,16 +593,17 @@ const handleLogout = async () => {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>New Password</Text>
-              <View style={styles.inputContainer}>
+              <Text style={[styles.inputLabel, { color: theme.textPrimary }]}>New Password</Text>
+              <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
                 <Ionicons
                   name="lock-closed-outline"
                   size={20}
-                  color="#B2BEC3"
+                  color={theme.textSecondary}
                 />
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: theme.textPrimary }]}
                   placeholder="Enter new password"
+                  placeholderTextColor={theme.textSecondary}
                   value={newPassword}
                   onChangeText={setNewPassword}
                   secureTextEntry
@@ -590,16 +613,17 @@ const handleLogout = async () => {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Confirm New Password</Text>
-              <View style={styles.inputContainer}>
+              <Text style={[styles.inputLabel, { color: theme.textPrimary }]}>Confirm New Password</Text>
+              <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
                 <Ionicons
                   name="lock-closed-outline"
                   size={20}
-                  color="#B2BEC3"
+                  color={theme.textSecondary}
                 />
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: theme.textPrimary }]}
                   placeholder="Confirm new password"
+                  placeholderTextColor={theme.textSecondary}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   secureTextEntry
@@ -611,12 +635,13 @@ const handleLogout = async () => {
             <TouchableOpacity
               style={[
                 styles.changePasswordButton,
-                isLoading && styles.disabledButton,
+                { backgroundColor: theme.primary },
+                isLoading && { backgroundColor: theme.textSecondary },
               ]}
               onPress={handleChangePassword}
               disabled={isLoading}
             >
-              <Text style={styles.changePasswordButtonText}>
+              <Text style={[styles.changePasswordButtonText, { color: theme.textInverse }]}>
                 {isLoading ? "Changing..." : "Change Password"}
               </Text>
             </TouchableOpacity>
@@ -630,7 +655,6 @@ const handleLogout = async () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FAFAFA",
   },
   header: {
     flexDirection: "row",
@@ -639,9 +663,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 16,
-    backgroundColor: "#fff",
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E5EA",
   },
   backButton: {
     width: 40,
@@ -652,13 +674,11 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#2D3436",
   },
   content: {
     flex: 1,
   },
   section: {
-    backgroundColor: "#fff",
     marginTop: 16,
   },
   sectionHeader: {
@@ -668,7 +688,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#F5F5F5",
   },
   sectionHeaderLeft: {
     flexDirection: "row",
@@ -685,11 +704,9 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#2D3436",
   },
   sectionContent: {
     borderBottomWidth: 1,
-    borderBottomColor: "#F5F5F5",
   },
   settingItem: {
     flexDirection: "row",
@@ -698,7 +715,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: "#F5F5F5",
   },
   settingLeft: {
     flexDirection: "row",
@@ -716,11 +732,9 @@ const styles = StyleSheet.create({
   settingText: {
     fontSize: 16,
     fontWeight: "500",
-    color: "#2D3436",
   },
   settingSubtext: {
     fontSize: 13,
-    color: "#B2BEC3",
     marginTop: 2,
   },
   bottomSpacing: {
@@ -739,28 +753,17 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 12,
     borderRadius: 12,
-    backgroundColor: "#F5F5F5",
     borderWidth: 2,
-    borderColor: "transparent",
     alignItems: "center",
     justifyContent: "center",
-  },
-  langButtonActive: {
-    backgroundColor: "#E5F9F8",
-    borderColor: "#4ECDC4",
   },
   langButtonText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#636E72",
-  },
-  langButtonTextActive: {
-    color: "#4ECDC4",
   },
   // Modal styles
   modalContainer: {
     flex: 1,
-    backgroundColor: "#FAFAFA",
   },
   modalHeader: {
     flexDirection: "row",
@@ -769,9 +772,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 16,
-    backgroundColor: "#fff",
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E5EA",
   },
   modalBackButton: {
     width: 40,
@@ -782,7 +783,6 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#2D3436",
   },
   modalContent: {
     flex: 1,
@@ -795,15 +795,12 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#2D3436",
     marginBottom: 8,
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#E5E5EA",
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -812,22 +809,16 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    color: "#2D3436",
   },
   changePasswordButton: {
-    backgroundColor: "#4ECDC4",
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",
     marginTop: 20,
     marginBottom: 40,
   },
-  disabledButton: {
-    backgroundColor: "#B2BEC3",
-  },
   changePasswordButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#fff",
   },
 });

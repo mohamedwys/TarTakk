@@ -1,6 +1,7 @@
 import AnimatedButton from "@/components/AnimatedButton";
 import { productsAPI, reviewsAPI, userAPI } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
+import { useEnv } from "@/src/env";
 import { safeUri } from "@/lib/utils/image";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -22,6 +23,8 @@ import Toast from "react-native-toast-message";
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { config } = useEnv();
+  const theme = config.theme;
   const [activeTab, setActiveTab] = useState<"listings" | "sold" | "reviews">(
     "listings"
   );
@@ -214,81 +217,81 @@ export default function ProfileScreen() {
   const renderListingCard = (item: any) => (
     <TouchableOpacity
       key={item.id}
-      style={styles.listingCard}
+      style={[styles.listingCard, { backgroundColor: theme.surface }]}
       onPress={() => router.push(`/product/${item.id}`)}
     >
       <Image
         source={safeUri(item.images?.[0])}
-        style={styles.listingImage}
+        style={[styles.listingImage, { backgroundColor: theme.border }]}
       />
       <View style={styles.listingInfo}>
-        <Text style={styles.listingTitle} numberOfLines={2}>
+        <Text style={[styles.listingTitle, { color: theme.textPrimary }]} numberOfLines={2}>
           {item.title}
         </Text>
-        <Text style={styles.listingPrice}>₦{item.price.toLocaleString()}</Text>
+        <Text style={[styles.listingPrice, { color: theme.textPrimary }]}>₦{item.price.toLocaleString()}</Text>
         <View style={styles.listingMeta}>
-          <Ionicons name="eye-outline" size={14} color="#636E72" />
-          <Text style={styles.listingViews}>{item.views || 0} views</Text>
+          <Ionicons name="eye-outline" size={14} color={theme.textSecondary} />
+          <Text style={[styles.listingViews, { color: theme.textSecondary }]}>{item.views || 0} views</Text>
         </View>
       </View>
       {item.status === "sold" && (
-        <View style={styles.soldBadge}>
-          <Text style={styles.soldText}>SOLD</Text>
+        <View style={[styles.soldBadge, { backgroundColor: theme.accent }]}>
+          <Text style={[styles.soldText, { color: theme.textInverse }]}>SOLD</Text>
         </View>
       )}
       <TouchableOpacity
-        style={styles.editButton}
+        style={[styles.editButton, { backgroundColor: theme.surface }]}
         onPress={() => router.push(`/product/edit/${item.id}`)}
       >
-        <Ionicons name="pencil" size={16} color="#2D3436" />
+        <Ionicons name="pencil" size={16} color={theme.textPrimary} />
       </TouchableOpacity>
     </TouchableOpacity>
   );
 
   if (userLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4ECDC4" />
-        <Text style={styles.loadingText}>Loading profile...</Text>
+      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
+        <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Loading profile...</Text>
       </View>
     );
   }
 
   if (userError) {
     return (
-      <View style={styles.errorContainer}>
-        <Ionicons name="cloud-offline-outline" size={48} color="#B2BEC3" />
-        <Text style={styles.errorText}>{userError}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={fetchUserProfile}>
-          <Text style={styles.retryText}>Retry</Text>
+      <View style={[styles.errorContainer, { backgroundColor: theme.background }]}>
+        <Ionicons name="cloud-offline-outline" size={48} color={theme.textSecondary} />
+        <Text style={[styles.errorText, { color: theme.textSecondary }]}>{userError}</Text>
+        <TouchableOpacity style={[styles.retryButton, { backgroundColor: theme.primary }]} onPress={fetchUserProfile}>
+          <Text style={[styles.retryText, { color: theme.textInverse }]}>Retry</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Profile</Text>
+      <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Profile</Text>
         <TouchableOpacity
-          style={styles.settingsButton}
+          style={[styles.settingsButton, { backgroundColor: theme.background }]}
           onPress={() => router.push("/settings")}
         >
-          <Ionicons name="settings-outline" size={24} color="#2D3436" />
+          <Ionicons name="settings-outline" size={24} color={theme.textPrimary} />
         </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Profile Section */}
         {!user ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#4ECDC4" />
-            <Text style={styles.loadingText}>Loading profile...</Text>
+          <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+            <ActivityIndicator size="large" color={theme.primary} />
+            <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Loading profile...</Text>
           </View>
         ) : (
           <>
-            <View style={styles.profileSection}>
+            <View style={[styles.profileSection, { backgroundColor: theme.surface }]}>
               <View style={styles.avatarContainer}>
                 <TouchableOpacity
                   onPress={handleAvatarChange}
@@ -298,56 +301,57 @@ export default function ProfileScreen() {
                     source={safeUri(user.avatar)}
                     style={[
                       styles.avatar,
+                      { backgroundColor: theme.background },
                       !user.avatar && styles.avatarPlaceholder,
                     ]}
                   />
                   {!user.avatar && (
                     <View style={styles.avatarPlaceholderContent}>
-                      <Ionicons name="person" size={40} color="#B2BEC3" />
+                      <Ionicons name="person" size={40} color={theme.textSecondary} />
                     </View>
                   )}
-                  <View style={styles.editAvatarButton}>
-                    <Ionicons name="camera" size={16} color="#fff" />
+                  <View style={[styles.editAvatarButton, { backgroundColor: theme.primary, borderColor: theme.surface }]}>
+                    <Ionicons name="camera" size={16} color={theme.textInverse} />
                   </View>
                 </TouchableOpacity>
                 {user.verified && (
-                  <View style={styles.verifiedBadge}>
+                  <View style={[styles.verifiedBadge, { backgroundColor: theme.surface }]}>
                     <Ionicons
                       name="checkmark-circle"
                       size={24}
-                      color="#4ECDC4"
+                      color={theme.primary}
                     />
                   </View>
                 )}
                 {updatingAvatar && (
                   <View style={styles.avatarLoading}>
-                    <Ionicons name="refresh" size={24} color="#4ECDC4" />
+                    <Ionicons name="refresh" size={24} color={theme.primary} />
                   </View>
                 )}
               </View>
-              <Text style={styles.userName}>{user.name}</Text>
-              <Text style={styles.userEmail}>{user.email}</Text>
+              <Text style={[styles.userName, { color: theme.textPrimary }]}>{user.name}</Text>
+              <Text style={[styles.userEmail, { color: theme.textSecondary }]}>{user.email}</Text>
 
-              {user.bio && <Text style={styles.userBio}>{user.bio}</Text>}
+              {user.bio && <Text style={[styles.userBio, { color: theme.textSecondary }]}>{user.bio}</Text>}
 
               {/* Stats */}
               <View style={styles.statsContainer}>
                 <View style={styles.statItem}>
-                  <Text style={styles.statValue}>{user.rating || 0}</Text>
+                  <Text style={[styles.statValue, { color: theme.textPrimary }]}>{user.rating || 0}</Text>
                   <View style={styles.statLabelRow}>
                     <Ionicons name="star" size={14} color="#FFB84D" />
-                    <Text style={styles.statLabel}>Rating</Text>
+                    <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Rating</Text>
                   </View>
                 </View>
-                <View style={styles.statDivider} />
+                <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
                 <View style={styles.statItem}>
-                  <Text style={styles.statValue}>{user.totalReviews || 0}</Text>
-                  <Text style={styles.statLabel}>Reviews</Text>
+                  <Text style={[styles.statValue, { color: theme.textPrimary }]}>{user.totalReviews || 0}</Text>
+                  <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Reviews</Text>
                 </View>
-                <View style={styles.statDivider} />
+                <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
                 <View style={styles.statItem}>
-                  <Text style={styles.statValue}>{user.totalSales || 0}</Text>
-                  <Text style={styles.statLabel}>Sales</Text>
+                  <Text style={[styles.statValue, { color: theme.textPrimary }]}>{user.totalSales || 0}</Text>
+                  <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Sales</Text>
                 </View>
               </View>
 
@@ -360,38 +364,38 @@ export default function ProfileScreen() {
             </View>
 
             {/* Quick Info */}
-            <View style={styles.infoSection}>
+            <View style={[styles.infoSection, { backgroundColor: theme.surface }]}>
               <View style={styles.infoItem}>
-                <View style={styles.infoIcon}>
-                  <Ionicons name="location-outline" size={20} color="#4ECDC4" />
+                <View style={[styles.infoIcon, { backgroundColor: theme.background }]}>
+                  <Ionicons name="location-outline" size={20} color={theme.primary} />
                 </View>
                 <View style={styles.infoContent}>
-                  <Text style={styles.infoLabel}>Location</Text>
-                  <Text style={styles.infoValue}>
+                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Location</Text>
+                  <Text style={[styles.infoValue, { color: theme.textPrimary }]}>
                     {user.location || "Not set"}
                   </Text>
                 </View>
               </View>
 
               <View style={styles.infoItem}>
-                <View style={styles.infoIcon}>
-                  <Ionicons name="call-outline" size={20} color="#4ECDC4" />
+                <View style={[styles.infoIcon, { backgroundColor: theme.background }]}>
+                  <Ionicons name="call-outline" size={20} color={theme.primary} />
                 </View>
                 <View style={styles.infoContent}>
-                  <Text style={styles.infoLabel}>Phone</Text>
-                  <Text style={styles.infoValue}>
+                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Phone</Text>
+                  <Text style={[styles.infoValue, { color: theme.textPrimary }]}>
                     {user.phoneNumber || "Not set"}
                   </Text>
                 </View>
               </View>
 
               <View style={styles.infoItem}>
-                <View style={styles.infoIcon}>
-                  <Ionicons name="calendar-outline" size={20} color="#4ECDC4" />
+                <View style={[styles.infoIcon, { backgroundColor: theme.background }]}>
+                  <Ionicons name="calendar-outline" size={20} color={theme.primary} />
                 </View>
                 <View style={styles.infoContent}>
-                  <Text style={styles.infoLabel}>Member Since</Text>
-                  <Text style={styles.infoValue}>
+                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Member Since</Text>
+                  <Text style={[styles.infoValue, { color: theme.textPrimary }]}>
                     {user.createdAt
                       ? new Date(user.createdAt).toLocaleDateString("en-US", {
                           month: "short",
@@ -403,35 +407,40 @@ export default function ProfileScreen() {
               </View>
             </View>
 
-            <View style={styles.listingsSection}>
-              <Text style={styles.sectionTitle}>My Listings</Text>
+            <View style={[styles.listingsSection, { backgroundColor: theme.surface }]}>
+              <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>My Listings</Text>
 
               {/* Tabs */}
-              <View style={styles.tabs}>
+              <View style={[styles.tabs, { borderBottomColor: theme.border }]}>
                 <TouchableOpacity
                   style={[
                     styles.tab,
-                    activeTab === "listings" && styles.activeTab,
+                    activeTab === "listings" && { borderBottomWidth: 2, borderBottomColor: theme.primary },
                   ]}
                   onPress={() => setActiveTab("listings")}
                 >
                   <Text
                     style={[
                       styles.tabText,
-                      activeTab === "listings" && styles.activeTabText,
+                      { color: theme.textSecondary },
+                      activeTab === "listings" && { color: theme.primary },
                     ]}
                   >
                     Active ({activeListings.length})
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.tab, activeTab === "sold" && styles.activeTab]}
+                  style={[
+                    styles.tab,
+                    activeTab === "sold" && { borderBottomWidth: 2, borderBottomColor: theme.primary },
+                  ]}
                   onPress={() => setActiveTab("sold")}
                 >
                   <Text
                     style={[
                       styles.tabText,
-                      activeTab === "sold" && styles.activeTabText,
+                      { color: theme.textSecondary },
+                      activeTab === "sold" && { color: theme.primary },
                     ]}
                   >
                     Sold ({soldListings.length})
@@ -440,14 +449,15 @@ export default function ProfileScreen() {
                 <TouchableOpacity
                   style={[
                     styles.tab,
-                    activeTab === "reviews" && styles.activeTab,
+                    activeTab === "reviews" && { borderBottomWidth: 2, borderBottomColor: theme.primary },
                   ]}
                   onPress={() => setActiveTab("reviews")}
                 >
                   <Text
                     style={[
                       styles.tabText,
-                      activeTab === "reviews" && styles.activeTabText,
+                      { color: theme.textSecondary },
+                      activeTab === "reviews" && { color: theme.primary },
                     ]}
                   >
                     Reviews ({reviews.length})
@@ -458,36 +468,36 @@ export default function ProfileScreen() {
               {/* Listings Grid */}
               {activeTab === "reviews" ? (
                 reviewsLoading ? (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#4ECDC4" />
-                    <Text style={styles.loadingText}>Loading reviews...</Text>
+                  <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+                    <ActivityIndicator size="large" color={theme.primary} />
+                    <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Loading reviews...</Text>
                   </View>
                 ) : reviewsError ? (
-                  <View style={styles.errorContainer}>
+                  <View style={[styles.errorContainer, { backgroundColor: theme.background }]}>
                     <Ionicons
                       name="cloud-offline-outline"
                       size={48}
-                      color="#B2BEC3"
+                      color={theme.textSecondary}
                     />
-                    <Text style={styles.errorText}>{reviewsError}</Text>
+                    <Text style={[styles.errorText, { color: theme.textSecondary }]}>{reviewsError}</Text>
                     <TouchableOpacity
-                      style={styles.retryButton}
+                      style={[styles.retryButton, { backgroundColor: theme.primary }]}
                       onPress={fetchUserReviews}
                     >
-                      <Text style={styles.retryText}>Retry</Text>
+                      <Text style={[styles.retryText, { color: theme.textInverse }]}>Retry</Text>
                     </TouchableOpacity>
                   </View>
                 ) : reviews.length > 0 ? (
                   <View style={styles.reviewsList}>
                     {reviews.map((review) => (
-                      <View key={review.id} style={styles.reviewCard}>
+                      <View key={review.id} style={[styles.reviewCard, { backgroundColor: theme.background }]}>
                         <View style={styles.reviewHeader}>
                           <Image
                             source={safeUri(review.reviewer?.avatar)}
                             style={styles.reviewerAvatar}
                           />
                           <View style={styles.reviewInfo}>
-                            <Text style={styles.reviewerName}>
+                            <Text style={[styles.reviewerName, { color: theme.textPrimary }]}>
                               {review.reviewer.name}
                             </Text>
                             <View style={styles.ratingContainer}>
@@ -503,11 +513,11 @@ export default function ProfileScreen() {
                               ))}
                             </View>
                           </View>
-                          <Text style={styles.reviewDate}>
+                          <Text style={[styles.reviewDate, { color: theme.textSecondary }]}>
                             {new Date(review.createdAt).toLocaleDateString()}
                           </Text>
                         </View>
-                        <Text style={styles.reviewComment}>
+                        <Text style={[styles.reviewComment, { color: theme.textSecondary }]}>
                           {review.comment}
                         </Text>
                         <TouchableOpacity
@@ -516,7 +526,7 @@ export default function ProfileScreen() {
                             router.push(`/product/${review.product.id}`)
                           }
                         >
-                          <Text style={styles.productLinkText}>
+                          <Text style={[styles.productLinkText, { color: theme.primary }]}>
                             About: {review.product.title}
                           </Text>
                         </TouchableOpacity>
@@ -528,32 +538,32 @@ export default function ProfileScreen() {
                     <Ionicons
                       name="chatbubble-outline"
                       size={64}
-                      color="#B2BEC3"
+                      color={theme.textSecondary}
                     />
-                    <Text style={styles.emptyText}>No reviews yet</Text>
-                    <Text style={styles.emptySubtext}>
+                    <Text style={[styles.emptyText, { color: theme.textSecondary }]}>No reviews yet</Text>
+                    <Text style={[styles.emptySubtext, { color: theme.textSecondary }]}>
                       Reviews from buyers will appear here
                     </Text>
                   </View>
                 )
               ) : listingsLoading ? (
-                <View style={styles.loadingContainer}>
-                  <ActivityIndicator size="large" color="#4ECDC4" />
-                  <Text style={styles.loadingText}>Loading listings...</Text>
+                <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+                  <ActivityIndicator size="large" color={theme.primary} />
+                  <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Loading listings...</Text>
                 </View>
               ) : listingsError ? (
-                <View style={styles.errorContainer}>
+                <View style={[styles.errorContainer, { backgroundColor: theme.background }]}>
                   <Ionicons
                     name="cloud-offline-outline"
                     size={48}
-                    color="#B2BEC3"
+                    color={theme.textSecondary}
                   />
-                  <Text style={styles.errorText}>{listingsError}</Text>
+                  <Text style={[styles.errorText, { color: theme.textSecondary }]}>{listingsError}</Text>
                   <TouchableOpacity
-                    style={styles.retryButton}
+                    style={[styles.retryButton, { backgroundColor: theme.primary }]}
                     onPress={fetchUserListings}
                   >
-                    <Text style={styles.retryText}>Retry</Text>
+                    <Text style={[styles.retryText, { color: theme.textInverse }]}>Retry</Text>
                   </TouchableOpacity>
                 </View>
               ) : (
@@ -570,8 +580,8 @@ export default function ProfileScreen() {
                 ((activeTab === "listings" && activeListings.length === 0) ||
                   (activeTab === "sold" && soldListings.length === 0)) && (
                   <View style={styles.emptyState}>
-                    <Ionicons name="cube-outline" size={64} color="#B2BEC3" />
-                    <Text style={styles.emptyText}>
+                    <Ionicons name="cube-outline" size={64} color={theme.textSecondary} />
+                    <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
                       {activeTab === "listings"
                         ? "No active listings yet"
                         : "No sold items yet"}
@@ -589,16 +599,16 @@ export default function ProfileScreen() {
             </View>
 
             {/* Actions Section */}
-            <View style={styles.actionsSection}>
+            <View style={[styles.actionsSection, { backgroundColor: theme.surface }]}>
               <TouchableOpacity
                 style={styles.actionItem}
                 onPress={() => router.push("/favorites")}
               >
                 <View style={styles.actionLeft}>
-                  <Ionicons name="heart-outline" size={24} color="#FF6B6B" />
-                  <Text style={styles.actionText}>Favorites</Text>
+                  <Ionicons name="heart-outline" size={24} color={theme.accent} />
+                  <Text style={[styles.actionText, { color: theme.textPrimary }]}>Favorites</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#B2BEC3" />
+                <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -606,10 +616,10 @@ export default function ProfileScreen() {
                 onPress={() => router.push("/settings")}
               >
                 <View style={styles.actionLeft}>
-                  <Ionicons name="settings-outline" size={24} color="#636E72" />
-                  <Text style={styles.actionText}>Settings</Text>
+                  <Ionicons name="settings-outline" size={24} color={theme.textSecondary} />
+                  <Text style={[styles.actionText, { color: theme.textPrimary }]}>Settings</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#B2BEC3" />
+                <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -620,11 +630,11 @@ export default function ProfileScreen() {
                   <Ionicons
                     name="help-circle-outline"
                     size={24}
-                    color="#636E72"
+                    color={theme.textSecondary}
                   />
-                  <Text style={styles.actionText}>Help & Support</Text>
+                  <Text style={[styles.actionText, { color: theme.textPrimary }]}>Help & Support</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#B2BEC3" />
+                <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -632,12 +642,12 @@ export default function ProfileScreen() {
                 onPress={handleLogout}
               >
                 <View style={styles.actionLeft}>
-                  <Ionicons name="log-out-outline" size={24} color="#FF6B6B" />
-                  <Text style={[styles.actionText, styles.logoutText]}>
+                  <Ionicons name="log-out-outline" size={24} color={theme.error} />
+                  <Text style={[styles.actionText, { color: theme.error }]}>
                     Logout
                   </Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#B2BEC3" />
+                <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
               </TouchableOpacity>
             </View>
 
@@ -653,7 +663,6 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FAFAFA",
   },
   header: {
     flexDirection: "row",
@@ -662,20 +671,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 16,
-    backgroundColor: "#fff",
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E5EA",
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#2D3436",
   },
   settingsButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#F5F5F5",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -683,7 +688,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   profileSection: {
-    backgroundColor: "#fff",
     alignItems: "center",
     paddingVertical: 32,
     paddingHorizontal: 20,
@@ -697,29 +701,24 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: "#F5F5F5",
   },
   verifiedBadge: {
     position: "absolute",
     bottom: 0,
     right: 0,
-    backgroundColor: "#fff",
     borderRadius: 12,
   },
   userName: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#2D3436",
     marginBottom: 4,
   },
   userEmail: {
     fontSize: 14,
-    color: "#636E72",
     marginBottom: 12,
   },
   userBio: {
     fontSize: 15,
-    color: "#636E72",
     textAlign: "center",
     lineHeight: 22,
     marginBottom: 24,
@@ -736,7 +735,6 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#2D3436",
     marginBottom: 4,
   },
   statLabelRow: {
@@ -746,15 +744,12 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 13,
-    color: "#636E72",
   },
   statDivider: {
     width: 1,
     height: 40,
-    backgroundColor: "#E5E5EA",
   },
   infoSection: {
-    backgroundColor: "#fff",
     paddingVertical: 12,
     marginBottom: 8,
   },
@@ -769,7 +764,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#E5F9F8",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -778,30 +772,25 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 13,
-    color: "#636E72",
     marginBottom: 2,
   },
   infoValue: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#2D3436",
   },
   listingsSection: {
-    backgroundColor: "#fff",
     paddingTop: 20,
     marginBottom: 8,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#2D3436",
     paddingHorizontal: 20,
     marginBottom: 16,
   },
   tabs: {
     flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E5EA",
     marginBottom: 16,
   },
   tab: {
@@ -809,17 +798,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: "center",
   },
-  activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: "#2D3436",
-  },
   tabText: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#B2BEC3",
-  },
-  activeTabText: {
-    color: "#2D3436",
   },
   listingsGrid: {
     paddingHorizontal: 20,
@@ -827,7 +808,6 @@ const styles = StyleSheet.create({
   },
   listingCard: {
     flexDirection: "row",
-    backgroundColor: "#F5F5F5",
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
@@ -837,7 +817,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 8,
-    backgroundColor: "#E5E5EA",
     marginRight: 12,
   },
   listingInfo: {
@@ -847,13 +826,11 @@ const styles = StyleSheet.create({
   listingTitle: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#2D3436",
     marginBottom: 4,
   },
   listingPrice: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#2D3436",
     marginBottom: 4,
   },
   listingMeta: {
@@ -863,19 +840,16 @@ const styles = StyleSheet.create({
   },
   listingViews: {
     fontSize: 13,
-    color: "#636E72",
   },
   soldBadge: {
     position: "absolute",
     top: 12,
     left: 12,
-    backgroundColor: "rgba(255, 107, 107, 0.9)",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
   },
   soldText: {
-    color: "#fff",
     fontSize: 11,
     fontWeight: "700",
   },
@@ -886,7 +860,6 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
@@ -901,12 +874,10 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: "#636E72",
     marginTop: 16,
     marginBottom: 24,
   },
   actionsSection: {
-    backgroundColor: "#fff",
     paddingVertical: 8,
     marginBottom: 8,
   },
@@ -925,10 +896,6 @@ const styles = StyleSheet.create({
   actionText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#2D3436",
-  },
-  logoutText: {
-    color: "#FF6B6B",
   },
   bottomSpacing: {
     height: 40,
@@ -937,40 +904,32 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FAFAFA",
   },
   loadingText: {
     fontSize: 16,
-    color: "#636E72",
   },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 40,
-    backgroundColor: "#FAFAFA",
   },
   errorText: {
     fontSize: 16,
-    color: "#636E72",
     textAlign: "center",
     marginTop: 12,
     marginBottom: 20,
   },
   retryButton: {
-    backgroundColor: "#4ECDC4",
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,
   },
   retryText: {
-    color: "#fff",
     fontSize: 16,
     fontWeight: "600",
   },
-  avatarPlaceholder: {
-    backgroundColor: "#F5F5F5",
-  },
+  avatarPlaceholder: {},
   avatarPlaceholderContent: {
     position: "absolute",
     top: 0,
@@ -987,11 +946,9 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#4ECDC4",
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 3,
-    borderColor: "#fff",
   },
   avatarLoading: {
     position: "absolute",
@@ -1009,7 +966,6 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   reviewCard: {
-    backgroundColor: "#F8F9FA",
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
@@ -1031,7 +987,6 @@ const styles = StyleSheet.create({
   reviewerName: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#2D3436",
     marginBottom: 4,
   },
   ratingContainer: {
@@ -1039,11 +994,9 @@ const styles = StyleSheet.create({
   },
   reviewDate: {
     fontSize: 12,
-    color: "#B2BEC3",
   },
   reviewComment: {
     fontSize: 14,
-    color: "#636E72",
     lineHeight: 20,
     marginBottom: 8,
   },
@@ -1052,12 +1005,10 @@ const styles = StyleSheet.create({
   },
   productLinkText: {
     fontSize: 13,
-    color: "#4ECDC4",
     fontWeight: "600",
   },
   emptySubtext: {
     fontSize: 14,
-    color: "#B2BEC3",
     textAlign: "center",
     marginTop: 8,
   },
