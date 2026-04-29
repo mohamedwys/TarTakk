@@ -41,19 +41,19 @@ function ProPortalHeader() {
           {
             key: 'dashboard',
             label: t('proPortal.nav.dashboard'),
-            path: '/(pro-portal)/dashboard',
+            path: '/pro-portal/dashboard',
             icon: 'speedometer-outline',
           },
           {
             key: 'products',
             label: t('proPortal.nav.products'),
-            path: '/(pro-portal)/products',
+            path: '/pro-portal/products',
             icon: 'cube-outline',
           },
           {
             key: 'orders',
             label: t('proPortal.nav.orders'),
-            path: '/(pro-portal)/orders',
+            path: '/pro-portal/orders',
             icon: 'receipt-outline',
           },
         ] as const)
@@ -110,7 +110,7 @@ function ProPortalHeader() {
             style={[styles.logoutButton, { borderColor: config.theme.border }]}
             onPress={async () => {
               await logout();
-              router.replace('/(pro-portal)/login' as never);
+              router.replace('/pro-portal/login' as never);
             }}
           >
             <Ionicons name="log-out-outline" size={18} color={config.theme.error} />

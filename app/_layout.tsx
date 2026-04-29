@@ -63,6 +63,13 @@ function AppContent() {
             ...ScreenTransitions.fade,
           }}
         />
+        <Stack.Screen
+          name="pro-portal"
+          options={{
+            headerShown: false,
+            ...ScreenTransitions.fade,
+          }}
+        />
 
         {/* <Stack.Screen 
           name="modal" 

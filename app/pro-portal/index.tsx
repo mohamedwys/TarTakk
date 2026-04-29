@@ -16,11 +16,11 @@ export default function ProPortalIndex() {
     const isProAccount = user?.accountType === 'B2C' || user?.accountType === 'B2B';
 
     if (!isLoggedIn) {
-      router.replace('/(pro-portal)/login' as never);
+      router.replace('/pro-portal/login' as never);
     } else if (!isProAccount) {
-      router.replace('/(pro-portal)/onboarding' as never);
+      router.replace('/pro-portal/onboarding' as never);
     } else {
-      router.replace('/(pro-portal)/dashboard' as never);
+      router.replace('/pro-portal/dashboard' as never);
     }
   }, [user, isLoading, router]);
 
