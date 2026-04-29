@@ -317,5 +317,42 @@
     "mockMode": "Mode test — Aucun paiement réel ne sera effectué",
     "processingPayment": "Traitement du paiement...",
     "verifyingTransaction": "Vérification de la transaction..."
+  },
+  "proPortal": {
+    "title": "Espace Vendeur Pro",
+    "subtitle": "Gérez votre boutique Tartakk",
+    "blockMobileTitle": "Utilisez un navigateur web",
+    "blockMobileMessage": "L'Espace Vendeur Pro est accessible uniquement depuis un navigateur web sur ordinateur ou tablette. Veuillez ouvrir cette URL sur votre PC.",
+    "blockMobileUrl": "Sur votre PC, ouvrez : ",
+    "login": {
+      "title": "Connexion Vendeur",
+      "subtitle": "Accédez à votre tableau de bord",
+      "email": "Email professionnel",
+      "emailPlaceholder": "votre@email.com",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Votre mot de passe",
+      "submitButton": "Se connecter",
+      "loggingIn": "Connexion...",
+      "noAccount": "Vous n'êtes pas encore vendeur ?",
+      "becomeProLink": "Devenir vendeur Pro",
+      "wrongCredentials": "Email ou mot de passe incorrect",
+      "loginFailed": "Échec de la connexion",
+      "notProAccount": "Ce compte n'est pas encore validé comme vendeur Pro. Soumettez votre dossier KYC."
+    },
+    "nav": {
+      "dashboard": "Tableau de bord",
+      "products": "Produits",
+      "orders": "Commandes",
+      "settings": "Paramètres",
+      "logout": "Déconnexion"
+    },
+    "dashboard": {
+      "welcomeTitle": "Bienvenue {{name}} 👋",
+      "welcomeSubtitle": "Voici un aperçu de votre activité",
+      "comingSoon": "Bientôt disponible — Cette section sera prête au Prompt 12C"
+    },
+    "onboarding": {
+      "comingSoon": "Bientôt disponible — Le formulaire KYC sera prêt au Prompt 12B"
+    }
   }
 }

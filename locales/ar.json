@@ -317,5 +317,42 @@
     "mockMode": "وضع الاختبار — لن يتم إجراء أي دفع فعلي",
     "processingPayment": "معالجة الدفع...",
     "verifyingTransaction": "التحقق من المعاملة..."
+  },
+  "proPortal": {
+    "title": "فضاء البائع المحترف",
+    "subtitle": "أدر متجرك في تارتاك",
+    "blockMobileTitle": "استخدم متصفح ويب",
+    "blockMobileMessage": "فضاء البائع المحترف متاح فقط من متصفح ويب على الكمبيوتر أو الجهاز اللوحي.",
+    "blockMobileUrl": "افتح هذا الرابط على الكمبيوتر: ",
+    "login": {
+      "title": "تسجيل دخول البائع",
+      "subtitle": "ادخل إلى لوحة التحكم",
+      "email": "البريد الإلكتروني المهني",
+      "emailPlaceholder": "your@email.com",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "كلمة المرور",
+      "submitButton": "تسجيل الدخول",
+      "loggingIn": "جاري الاتصال...",
+      "noAccount": "لست بائعا بعد؟",
+      "becomeProLink": "كن بائعا محترفا",
+      "wrongCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+      "loginFailed": "فشل تسجيل الدخول",
+      "notProAccount": "هذا الحساب لم يتم التحقق منه كبائع محترف بعد. قدم ملف KYC."
+    },
+    "nav": {
+      "dashboard": "لوحة التحكم",
+      "products": "المنتجات",
+      "orders": "الطلبات",
+      "settings": "الإعدادات",
+      "logout": "تسجيل الخروج"
+    },
+    "dashboard": {
+      "welcomeTitle": "مرحبا {{name}} 👋",
+      "welcomeSubtitle": "إليك نظرة عامة على نشاطك",
+      "comingSoon": "قريبا"
+    },
+    "onboarding": {
+      "comingSoon": "قريبا - نموذج KYC سيكون جاهزا في P12B"
+    }
   }
 }

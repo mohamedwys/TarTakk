@@ -317,5 +317,42 @@
     "mockMode": "Test mode — No real payment will be made",
     "processingPayment": "Processing payment...",
     "verifyingTransaction": "Verifying transaction..."
+  },
+  "proPortal": {
+    "title": "Pro Seller Portal",
+    "subtitle": "Manage your Tartakk store",
+    "blockMobileTitle": "Use a web browser",
+    "blockMobileMessage": "The Pro Seller Portal is accessible only from a web browser on a computer or tablet. Please open this URL on your PC.",
+    "blockMobileUrl": "On your PC, open: ",
+    "login": {
+      "title": "Seller Login",
+      "subtitle": "Access your dashboard",
+      "email": "Professional email",
+      "emailPlaceholder": "your@email.com",
+      "password": "Password",
+      "passwordPlaceholder": "Your password",
+      "submitButton": "Log in",
+      "loggingIn": "Logging in...",
+      "noAccount": "Not a seller yet?",
+      "becomeProLink": "Become a Pro Seller",
+      "wrongCredentials": "Invalid email or password",
+      "loginFailed": "Login failed",
+      "notProAccount": "This account is not yet validated as Pro Seller. Submit your KYC."
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "products": "Products",
+      "orders": "Orders",
+      "settings": "Settings",
+      "logout": "Logout"
+    },
+    "dashboard": {
+      "welcomeTitle": "Welcome {{name}} 👋",
+      "welcomeSubtitle": "Here's an overview of your activity",
+      "comingSoon": "Coming soon"
+    },
+    "onboarding": {
+      "comingSoon": "Coming soon — KYC form will be ready in P12B"
+    }
   }
 }
