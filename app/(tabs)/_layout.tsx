@@ -1,15 +1,22 @@
 import AnimatedTabIcon from '@/components/AnimatedTabIcon';
 import { BadgePulse } from '@/components/BadgeBounce';
 import { useUnreadCount } from '@/contexts/UnreadCountContext';
+import { EnvSwitcher } from '@/src/components/env/EnvSwitcher';
 import { Tabs } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
   const { totalUnreadCount } = useUnreadCount(); 
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+        <SafeAreaView edges={['top']} style={{ backgroundColor: '#FFFFFF' }}>
+          <EnvSwitcher />
+        </SafeAreaView>
+        <View style={{ flex: 1 }}>
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: '#4ECDC4',
@@ -118,6 +125,8 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
+        </View>
+      </View>
     </GestureHandlerRootView>
   );
 }

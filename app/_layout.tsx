@@ -7,6 +7,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 function AppContent() {
@@ -142,12 +143,14 @@ function AppContent() {
 export default function RootLayout() {
   return (
     <EnvProvider>
-      <AuthProvider>
-        <UnreadCountProvider>
-          <AppContent />
-          <Toast config={toastConfig} />
-        </UnreadCountProvider>
-      </AuthProvider>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <UnreadCountProvider>
+            <AppContent />
+            <Toast config={toastConfig} />
+          </UnreadCountProvider>
+        </AuthProvider>
+      </SafeAreaProvider>
     </EnvProvider>
   );
 }
