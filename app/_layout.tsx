@@ -4,6 +4,7 @@ import { ScreenTransitions } from "@/constants/transitions";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { UnreadCountProvider } from "@/contexts/UnreadCountContext";
 import { toastConfig } from "@/lib/toastConfig";
+import { CartProvider } from "@/src/cart";
 import { EnvProvider } from "@/src/env";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -147,10 +148,12 @@ export default function RootLayout() {
     <EnvProvider>
       <SafeAreaProvider>
         <AuthProvider>
-          <UnreadCountProvider>
-            <AppContent />
-            <Toast config={toastConfig} />
-          </UnreadCountProvider>
+          <CartProvider>
+            <UnreadCountProvider>
+              <AppContent />
+              <Toast config={toastConfig} />
+            </UnreadCountProvider>
+          </CartProvider>
         </AuthProvider>
       </SafeAreaProvider>
     </EnvProvider>
