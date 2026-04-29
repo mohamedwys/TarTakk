@@ -1,0 +1,69 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "yes": "Yes",
+    "no": "No",
+    "later": "Later"
+  },
+  "tabs": {
+    "home": "Home",
+    "explore": "Explore",
+    "sell": "Sell",
+    "cart": "Cart",
+    "messages": "Messages",
+    "profile": "Profile"
+  },
+  "env": {
+    "shopPro": "Shop Pro",
+    "marketplace": "Marketplace"
+  },
+  "home": {
+    "greeting": "Hello {{name}} 👋",
+    "tagline": "Find your perfect item",
+    "categories": "Categories",
+    "featuredProducts": "Featured Products",
+    "seeAll": "See all",
+    "noProducts": "No products available",
+    "checkBackLater": "Check back later for new listings"
+  },
+  "auth": {
+    "login": "Log in",
+    "register": "Sign up",
+    "logout": "Log out",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?"
+  },
+  "product": {
+    "addToCart": "Add to cart",
+    "messageSeller": "Message seller",
+    "buyNow": "Buy now",
+    "outOfStock": "Out of stock",
+    "condition": {
+      "neuf": "New",
+      "très_bon": "Like new",
+      "bon": "Good",
+      "acceptable": "Acceptable"
+    }
+  },
+  "kyc": {
+    "becomePro": "Become a Pro Seller",
+    "individualAccount": "Individual account",
+    "needProAccount": "To publish in the Shop Pro catalog, you must become a professional seller.",
+    "submitApplication": "Submit my application",
+    "benefits": {
+      "premiumCatalog": "Access to the premium Shop Pro catalog",
+      "stockManagement": "Multiple stock per product",
+      "advancedTools": "Advanced selling tools",
+      "dashboard": "Seller dashboard"
+    }
+  }
+}

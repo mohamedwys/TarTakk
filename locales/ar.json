@@ -1,0 +1,69 @@
+{
+  "common": {
+    "loading": "جاري التحميل...",
+    "error": "حدث خطأ",
+    "retry": "إعادة المحاولة",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "search": "بحث",
+    "yes": "نعم",
+    "no": "لا",
+    "later": "لاحقا"
+  },
+  "tabs": {
+    "home": "الرئيسية",
+    "explore": "استكشف",
+    "sell": "بيع",
+    "cart": "السلة",
+    "messages": "الرسائل",
+    "profile": "الملف"
+  },
+  "env": {
+    "shopPro": "متجر محترف",
+    "marketplace": "السوق"
+  },
+  "home": {
+    "greeting": "مرحبا {{name}} 👋",
+    "tagline": "اعثر على المنتج المثالي",
+    "categories": "الفئات",
+    "featuredProducts": "منتجات مميزة",
+    "seeAll": "عرض الكل",
+    "noProducts": "لا توجد منتجات متاحة",
+    "checkBackLater": "تحقق لاحقا للعثور على إعلانات جديدة"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "register": "إنشاء حساب",
+    "logout": "تسجيل الخروج",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "forgotPassword": "نسيت كلمة المرور؟"
+  },
+  "product": {
+    "addToCart": "أضف إلى السلة",
+    "messageSeller": "تواصل مع البائع",
+    "buyNow": "اشتر الآن",
+    "outOfStock": "نفذ المخزون",
+    "condition": {
+      "neuf": "جديد",
+      "très_bon": "حالة ممتازة",
+      "bon": "حالة جيدة",
+      "acceptable": "مقبول"
+    }
+  },
+  "kyc": {
+    "becomePro": "كن بائعا محترفا",
+    "individualAccount": "حساب فردي",
+    "needProAccount": "للنشر في كتالوج Shop Pro، يجب أن تكون بائعا محترفا.",
+    "submitApplication": "تقديم طلبي",
+    "benefits": {
+      "premiumCatalog": "الوصول إلى كتالوج Shop Pro الفاخر",
+      "stockManagement": "مخزون متعدد لكل منتج",
+      "advancedTools": "أدوات بيع متقدمة",
+      "dashboard": "لوحة تحكم البائع"
+    }
+  }
+}

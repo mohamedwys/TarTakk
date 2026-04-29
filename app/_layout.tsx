@@ -1,3 +1,5 @@
+import "@/src/i18n";
+
 import { ScreenTransitions } from "@/constants/transitions";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { UnreadCountProvider } from "@/contexts/UnreadCountContext";
