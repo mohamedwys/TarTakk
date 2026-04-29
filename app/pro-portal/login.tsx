@@ -43,7 +43,7 @@ export default function ProPortalLogin() {
 
       // Index route handles B2C/B2B/onboarding routing once the auth
       // state has settled.
-      router.replace('/pro-portal' as never);
+      router.replace({ pathname: '/pro-portal' } as any);
     } catch (err) {
       Toast.show({
         type: 'error',
@@ -144,7 +144,7 @@ export default function ProPortalLogin() {
           <Text style={[styles.signupText, { color: config.theme.textSecondary }]}>
             {t('proPortal.login.noAccount')}
           </Text>
-          <Pressable onPress={() => router.push('/pro-portal/onboarding' as never)}>
+          <Pressable onPress={() => router.push({ pathname: '/pro-portal/onboarding' } as any)}>
             <Text style={[styles.signupLink, { color: config.theme.primary }]}>
               {t('proPortal.login.becomeProLink')}
             </Text>

@@ -10,17 +10,19 @@ export default function ProPortalIndex() {
   const { config } = useEnv();
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     if (isLoading) return;
 
     const isLoggedIn = !!user?._id;
-    const isProAccount = user?.accountType === 'B2C' || user?.accountType === 'B2B';
+    const accountType = user?.accountType;
+    const isProAccount = accountType === 'B2C' || accountType === 'B2B';
 
     if (!isLoggedIn) {
-      router.replace('/pro-portal/login' as never);
-    } else if (!isProAccount) {
-      router.replace('/pro-portal/onboarding' as never);
+      router.replace({ pathname: '/pro-portal/login' } as any);
+    } else if (isProAccount) {
+      router.replace({ pathname: '/pro-portal/dashboard' } as any);
     } else {
-      router.replace('/pro-portal/dashboard' as never);
+      router.replace({ pathname: '/pro-portal/onboarding' } as any);
     }
   }, [user, isLoading, router]);
 

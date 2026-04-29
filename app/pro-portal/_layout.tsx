@@ -81,7 +81,7 @@ function ProPortalHeader() {
                   styles.navItem,
                   isActive && { backgroundColor: config.theme.primary + '15' },
                 ]}
-                onPress={() => router.push(item.path as never)}
+                onPress={() => router.push({ pathname: item.path } as any)}
               >
                 <Ionicons
                   name={item.icon}
@@ -110,7 +110,7 @@ function ProPortalHeader() {
             style={[styles.logoutButton, { borderColor: config.theme.border }]}
             onPress={async () => {
               await logout();
-              router.replace('/pro-portal/login' as never);
+              router.replace({ pathname: '/pro-portal/login' } as any);
             }}
           >
             <Ionicons name="log-out-outline" size={18} color={config.theme.error} />
