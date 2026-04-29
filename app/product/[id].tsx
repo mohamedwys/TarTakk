@@ -10,10 +10,13 @@ import {
   reviewsAPI,
 } from "@/lib/api";
 import { filterImages, safeUri } from "@/lib/utils/image";
+import { useEnv } from "@/src/env";
+import { formatPrice } from "@/src/utils/currency";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   Clipboard,
@@ -21,6 +24,7 @@ import {
   Image,
   Linking,
   Modal,
+  Pressable,
   ScrollView,
   Share,
   StyleSheet,
@@ -35,6 +39,8 @@ const { width } = Dimensions.get("window");
 
 export default function ProductDetailScreen() {
   const { user: currentUser } = useAuth();
+  const { config } = useEnv();
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -318,6 +324,35 @@ export default function ProductDetailScreen() {
     }
   };
 
+  const isC2C = product?.listing_type === "C2C";
+  const sellerId =
+    product?.seller_id || product?.seller?.id || product?.seller?._id;
+  const isOwnProduct = !!currentUser?.id && currentUser.id === sellerId;
+  const stockQty = product?.stock_qty ?? 1;
+  const isOutOfStock = stockQty <= 0;
+  const isLowStock = stockQty > 0 && stockQty <= 5;
+
+  const handleMessageSeller = () => {
+    if (!currentUser) {
+      Alert.alert(t("product.loginRequired"));
+      return;
+    }
+    if (isOwnProduct) {
+      Alert.alert(t("product.ownProduct"));
+      return;
+    }
+    if (!sellerId) return;
+    router.push(`/chat/${sellerId}` as any);
+  };
+
+  const handleAddToCart = () => {
+    Alert.alert(t("product.comingSoon"), t("product.cartComingSoon"));
+  };
+
+  const handleBuyNow = () => {
+    Alert.alert(t("product.comingSoon"), t("product.buyNowComingSoon"));
+  };
+
   const handleDeleteReview = async (
     reviewId: string,
     type: "product" | "seller"
@@ -461,8 +496,85 @@ export default function ProductDetailScreen() {
         {/* Product Info */}
         <SlideInView direction="up" delay={150}>
           <View style={styles.infoContainer}>
-            <Text style={styles.price}>₦{product.price.toLocaleString()}</Text>
+            <Text style={styles.price}>
+              {formatPrice(product.price, product.currency || "MAD")}
+            </Text>
             <Text style={styles.title}>{product.title}</Text>
+
+            <View style={styles.badgeRow}>
+              {isC2C && (
+                <View
+                  style={[
+                    styles.badge,
+                    { backgroundColor: config.theme.surface },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.badgeText,
+                      { color: config.theme.textSecondary },
+                    ]}
+                  >
+                    {t("product.soldByIndividual")}
+                  </Text>
+                </View>
+              )}
+              {!isC2C && product?.seller?.is_verified && (
+                <View
+                  style={[
+                    styles.badge,
+                    { backgroundColor: config.theme.success + "20" },
+                  ]}
+                >
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={14}
+                    color={config.theme.success}
+                  />
+                  <Text
+                    style={[
+                      styles.badgeText,
+                      { color: config.theme.success, marginLeft: 4 },
+                    ]}
+                  >
+                    {t("product.verifiedProSeller")}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            {!isC2C && (
+              <View style={styles.stockRow}>
+                {isOutOfStock ? (
+                  <Text
+                    style={[
+                      styles.stockText,
+                      { color: config.theme.error },
+                    ]}
+                  >
+                    {t("product.outOfStock")}
+                  </Text>
+                ) : isLowStock ? (
+                  <Text
+                    style={[
+                      styles.stockText,
+                      { color: config.theme.warning },
+                    ]}
+                  >
+                    {t("product.lowStock", { count: stockQty })}
+                  </Text>
+                ) : (
+                  <Text
+                    style={[
+                      styles.stockText,
+                      { color: config.theme.success },
+                    ]}
+                  >
+                    {t("product.inStock", { count: stockQty })}
+                  </Text>
+                )}
+              </View>
+            )}
 
             <View style={styles.metaInfo}>
               <View style={styles.metaItem}>
@@ -856,14 +968,74 @@ export default function ProductDetailScreen() {
         <TouchableOpacity style={styles.callButton} onPress={handleCall}>
           <Ionicons name="call-outline" size={24} color="#2D3436" />
         </TouchableOpacity>
-        <View style={styles.messageButtonWrapper}>
-          <AnimatedButton
-            title="Message Seller"
-            icon="chatbubble-outline"
-            onPress={handleMessage}
-            size="large"
-            style={styles.messageButton}
-          />
+        <View style={styles.ctaContainer}>
+          {isC2C ? (
+            <Pressable
+              style={[
+                styles.primaryCTA,
+                { backgroundColor: config.theme.primary },
+              ]}
+              onPress={handleMessageSeller}
+            >
+              <Ionicons
+                name="chatbubble-outline"
+                size={20}
+                color={config.theme.textInverse}
+              />
+              <Text
+                style={[
+                  styles.primaryCTAText,
+                  { color: config.theme.textInverse },
+                ]}
+              >
+                {t("product.messageSeller")}
+              </Text>
+            </Pressable>
+          ) : (
+            <>
+              <Pressable
+                style={[
+                  styles.primaryCTA,
+                  { backgroundColor: config.theme.primary },
+                  isOutOfStock && styles.disabledCTA,
+                ]}
+                onPress={handleAddToCart}
+                disabled={isOutOfStock}
+              >
+                <Ionicons
+                  name="cart-outline"
+                  size={20}
+                  color={config.theme.textInverse}
+                />
+                <Text
+                  style={[
+                    styles.primaryCTAText,
+                    { color: config.theme.textInverse },
+                  ]}
+                >
+                  {t("product.addToCart")}
+                </Text>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.secondaryCTA,
+                  { backgroundColor: config.theme.accent },
+                  isOutOfStock && styles.disabledCTA,
+                ]}
+                onPress={handleBuyNow}
+                disabled={isOutOfStock}
+              >
+                <Text
+                  style={[
+                    styles.secondaryCTAText,
+                    { color: config.theme.textInverse },
+                  ]}
+                >
+                  {t("product.buyNow")}
+                </Text>
+              </Pressable>
+            </>
+          )}
         </View>
       </View>
     </View>
@@ -1187,6 +1359,64 @@ const styles = StyleSheet.create({
   messageButton: {
     height: 56,
     borderRadius: 28,
+  },
+  badgeRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 12,
+  },
+  badge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  stockRow: {
+    marginBottom: 12,
+  },
+  stockText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  ctaContainer: {
+    flex: 1,
+    flexDirection: "row",
+    gap: 8,
+  },
+  primaryCTA: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    height: 56,
+    borderRadius: 28,
+    gap: 8,
+    paddingHorizontal: 12,
+  },
+  primaryCTAText: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  secondaryCTA: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    height: 56,
+    borderRadius: 28,
+    paddingHorizontal: 12,
+  },
+  secondaryCTAText: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  disabledCTA: {
+    opacity: 0.5,
   },
   errorContainer: {
     flex: 1,
