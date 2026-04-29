@@ -4,6 +4,11 @@ import type { EnvId } from './envTypes';
 const STORAGE_KEY = 'app.current_env.v1';
 
 export async function loadStoredEnv(): Promise<EnvId | null> {
+  // ⚡ Skip on SSR (no window/localStorage)
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
   try {
     const value = await SecureStore.getItemAsync(STORAGE_KEY);
     if (value === 'b2c_pro' || value === 'marketplace_c2c') {
@@ -17,6 +22,11 @@ export async function loadStoredEnv(): Promise<EnvId | null> {
 }
 
 export async function saveStoredEnv(id: EnvId): Promise<void> {
+  // ⚡ Skip on SSR (no window/localStorage)
+  if (typeof window === 'undefined') {
+    return;
+  }
+
   try {
     await SecureStore.setItemAsync(STORAGE_KEY, id);
   } catch (err) {
@@ -25,6 +35,11 @@ export async function saveStoredEnv(id: EnvId): Promise<void> {
 }
 
 export async function clearStoredEnv(): Promise<void> {
+  // ⚡ Skip on SSR (no window/localStorage)
+  if (typeof window === 'undefined') {
+    return;
+  }
+
   try {
     await SecureStore.deleteItemAsync(STORAGE_KEY);
   } catch (err) {

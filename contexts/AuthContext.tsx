@@ -169,6 +169,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const checkAuthState = async () => {
+    // ⚡ Skip on SSR (no window/localStorage)
+    if (typeof window === 'undefined') {
+      return;
+    }
     if (hasCheckedAuth.current) {
       return;
     }
@@ -198,6 +202,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const reloadAuth = async () => {
+    // ⚡ Skip on SSR (no window/localStorage)
+    if (typeof window === 'undefined') {
+      return;
+    }
     hasCheckedAuth.current = false;
     setIsLoading(true);
 
@@ -219,6 +227,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   useEffect(() => {
+    // ⚡ Skip on SSR (no window/localStorage — Supabase session lives in SecureStore)
+    if (typeof window === 'undefined') {
+      setIsLoading(false);
+      return;
+    }
+
     void checkAuthState();
 
     // React to sign-in / token-refresh / sign-out events from anywhere in
