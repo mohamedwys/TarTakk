@@ -2,13 +2,28 @@ import AnimatedTabIcon from '@/components/AnimatedTabIcon';
 import { BadgePulse } from '@/components/BadgeBounce';
 import { useUnreadCount } from '@/contexts/UnreadCountContext';
 import { EnvSwitcher } from '@/src/components/env/EnvSwitcher';
-import { Tabs } from 'expo-router';
+import { useEnv } from '@/src/env';
+import { Ionicons } from '@expo/vector-icons';
+import { Tabs, useRouter, usePathname } from 'expo-router';
+import { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
-  const { totalUnreadCount } = useUnreadCount(); 
+  const { totalUnreadCount } = useUnreadCount();
+  const { config, current } = useEnv();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (current === 'b2c_pro' && pathname === '/create') {
+      router.replace('/(tabs)');
+    }
+    if (current === 'marketplace_c2c' && pathname === '/cart') {
+      router.replace('/(tabs)');
+    }
+  }, [current, pathname, router]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -19,7 +34,7 @@ export default function TabLayout() {
         <View style={{ flex: 1 }}>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: '#4ECDC4',
+          tabBarActiveTintColor: config.theme.primary,
           tabBarInactiveTintColor: '#B2BEC3',
           headerShown: false,
           tabBarStyle: {
@@ -77,12 +92,23 @@ export default function TabLayout() {
             tabBarIcon: ({ color, size, focused }) => (
               <AnimatedTabIcon
                 name="add-circle"
-                color={focused ? '#4ECDC4' : color}
+                color={focused ? config.theme.primary : color}
                 size={size + 8}
                 focused={focused}
               />
             ),
             tabBarLabel: 'Sell',
+            href: current === 'marketplace_c2c' ? '/(tabs)/create' : null,
+          }}
+        />
+        <Tabs.Screen
+          name="cart"
+          options={{
+            title: 'Cart',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="cart-outline" size={size} color={color} />
+            ),
+            href: current === 'b2c_pro' ? '/(tabs)/cart' : null,
           }}
         />
         <Tabs.Screen
