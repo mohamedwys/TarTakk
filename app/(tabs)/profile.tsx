@@ -604,6 +604,17 @@ export default function ProfileScreen() {
             <View style={[styles.actionsSection, { backgroundColor: theme.surface }]}>
               <TouchableOpacity
                 style={styles.actionItem}
+                onPress={() => router.push("/orders")}
+              >
+                <View style={styles.actionLeft}>
+                  <Ionicons name="receipt-outline" size={24} color={theme.primary} />
+                  <Text style={[styles.actionText, { color: theme.textPrimary }]}>{t('orders.myOrders')}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.actionItem}
                 onPress={() => router.push("/favorites")}
               >
                 <View style={styles.actionLeft}>

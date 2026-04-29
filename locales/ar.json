@@ -255,5 +255,45 @@
     "fillAllFields": "يرجى ملء جميع الحقول المطلوبة",
     "continueShopping": "متابعة التسوق",
     "viewOrder": "عرض طلبي"
+  },
+  "orders": {
+    "title": "طلباتي",
+    "myOrders": "طلباتي",
+    "noOrders": "لا توجد طلبات",
+    "noOrdersSubtitle": "ستظهر طلباتك هنا",
+    "startShopping": "ابدأ التسوق",
+    "orderRef": "طلب",
+    "items_one": "{{count}} منتج",
+    "items_other": "{{count}} منتجات",
+    "status": {
+      "pending": "في الانتظار",
+      "paid": "مدفوع",
+      "shipped": "مشحون",
+      "delivered": "تم التسليم",
+      "cancelled": "ملغى",
+      "refunded": "مسترد"
+    },
+    "timeline": {
+      "ordered": "تم تقديم الطلب",
+      "paid": "تم الدفع",
+      "shipped": "تم الشحن",
+      "delivered": "تم التسليم",
+      "cancelled": "ملغى"
+    },
+    "shippingTo": "التوصيل إلى",
+    "paymentMethod": "طريقة الدفع",
+    "paymentCod": "الدفع عند التسليم",
+    "paymentBank": "تحويل بنكي",
+    "paymentCmi": "بطاقة بنكية (CMI)",
+    "subtotal": "المجموع الفرعي",
+    "shipping": "التوصيل",
+    "total": "المجموع",
+    "cancelOrder": "إلغاء الطلب",
+    "cancelConfirm": "هل أنت متأكد من إلغاء الطلب؟",
+    "cancelSuccess": "تم إلغاء الطلب",
+    "cancelFailed": "تعذر إلغاء الطلب",
+    "loadFailed": "تعذر تحميل الطلبات",
+    "viewDetails": "عرض التفاصيل",
+    "contactSeller": "التواصل مع البائع"
   }
 }

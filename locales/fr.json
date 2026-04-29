@@ -255,5 +255,45 @@
     "fillAllFields": "Veuillez remplir tous les champs obligatoires",
     "continueShopping": "Continuer mes achats",
     "viewOrder": "Voir ma commande"
+  },
+  "orders": {
+    "title": "Mes Commandes",
+    "myOrders": "Mes commandes",
+    "noOrders": "Aucune commande",
+    "noOrdersSubtitle": "Vos commandes apparaîtront ici",
+    "startShopping": "Commencer mes achats",
+    "orderRef": "Commande",
+    "items_one": "{{count}} article",
+    "items_other": "{{count}} articles",
+    "status": {
+      "pending": "En attente",
+      "paid": "Payée",
+      "shipped": "Expédiée",
+      "delivered": "Livrée",
+      "cancelled": "Annulée",
+      "refunded": "Remboursée"
+    },
+    "timeline": {
+      "ordered": "Commande passée",
+      "paid": "Paiement reçu",
+      "shipped": "Expédiée",
+      "delivered": "Livrée",
+      "cancelled": "Annulée"
+    },
+    "shippingTo": "Livraison à",
+    "paymentMethod": "Méthode de paiement",
+    "paymentCod": "Paiement à la livraison",
+    "paymentBank": "Virement bancaire",
+    "paymentCmi": "Carte bancaire (CMI)",
+    "subtotal": "Sous-total",
+    "shipping": "Livraison",
+    "total": "Total",
+    "cancelOrder": "Annuler la commande",
+    "cancelConfirm": "Voulez-vous vraiment annuler cette commande ?",
+    "cancelSuccess": "Commande annulée",
+    "cancelFailed": "Impossible d'annuler la commande",
+    "loadFailed": "Impossible de charger les commandes",
+    "viewDetails": "Voir le détail",
+    "contactSeller": "Contacter le vendeur"
   }
 }

@@ -255,5 +255,45 @@
     "fillAllFields": "Please fill all required fields",
     "continueShopping": "Continue shopping",
     "viewOrder": "View my order"
+  },
+  "orders": {
+    "title": "My Orders",
+    "myOrders": "My orders",
+    "noOrders": "No orders yet",
+    "noOrdersSubtitle": "Your orders will appear here",
+    "startShopping": "Start shopping",
+    "orderRef": "Order",
+    "items_one": "{{count}} item",
+    "items_other": "{{count}} items",
+    "status": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded"
+    },
+    "timeline": {
+      "ordered": "Order placed",
+      "paid": "Payment received",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    },
+    "shippingTo": "Shipping to",
+    "paymentMethod": "Payment method",
+    "paymentCod": "Cash on Delivery",
+    "paymentBank": "Bank Transfer",
+    "paymentCmi": "Credit Card (CMI)",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "total": "Total",
+    "cancelOrder": "Cancel order",
+    "cancelConfirm": "Are you sure you want to cancel this order?",
+    "cancelSuccess": "Order cancelled",
+    "cancelFailed": "Failed to cancel order",
+    "loadFailed": "Failed to load orders",
+    "viewDetails": "View details",
+    "contactSeller": "Contact seller"
   }
 }
