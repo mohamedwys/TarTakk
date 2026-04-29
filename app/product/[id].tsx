@@ -372,8 +372,30 @@ export default function ProductDetailScreen() {
     }
   };
 
-  const handleBuyNow = () => {
-    Alert.alert(t("product.comingSoon"), t("product.buyNowComingSoon"));
+  const handleBuyNow = async () => {
+    if (!currentUser) {
+      Alert.alert(t("product.loginRequired"));
+      return;
+    }
+    if (isOwnProduct) {
+      Alert.alert(t("product.ownProduct"));
+      return;
+    }
+    if (isOutOfStock) {
+      Toast.show({ type: "error", text1: t("product.outOfStock") });
+      return;
+    }
+
+    const result = await addItem(product.id, 1);
+    if (result.success) {
+      router.push("/checkout");
+    } else {
+      Toast.show({
+        type: "error",
+        text1: t("cart.addToCartFailed"),
+        text2: result.error,
+      });
+    }
   };
 
   const handleDeleteReview = async (
