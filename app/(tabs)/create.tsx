@@ -1,4 +1,5 @@
 import AnimatedButton from "@/components/AnimatedButton";
+import { useAuth } from "@/contexts/AuthContext";
 import { productsAPI } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 import { safeUri } from "@/lib/utils/image";
@@ -35,6 +36,7 @@ const conditions = ["New", "Like New", "Good", "Fair", "Poor"];
 
 export default function CreateListingScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const [images, setImages] = useState<string[]>([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -43,6 +45,25 @@ export default function CreateListingScreen() {
   const [condition, setCondition] = useState("Good");
   const [location, setLocation] = useState("");
   const [isPosting, setIsPosting] = useState(false);
+  const [listingType, setListingType] = useState<"C2C" | "B2C">("C2C");
+
+  const handleListingTypeChange = (newType: "C2C" | "B2C") => {
+    if (newType === "B2C" && user?.accountType === "C2C") {
+      Alert.alert(
+        "Compte particulier",
+        "Pour publier dans le catalogue Shop Pro, vous devez devenir vendeur professionnel.",
+        [
+          { text: "Plus tard", style: "cancel" },
+          {
+            text: "Devenir Pro",
+            onPress: () => router.push("/become-pro-seller"),
+          },
+        ]
+      );
+      return;
+    }
+    setListingType(newType);
+  };
 
   const [brand, setBrand] = useState("");
   const [modelNumber, setModelNumber] = useState("");
@@ -269,6 +290,7 @@ export default function CreateListingScreen() {
         pickupOnly,
         isNegotiable,
         tags: [],
+        listing_type: listingType,
       };
 
       const response = await productsAPI.createProduct(productData);
@@ -297,6 +319,7 @@ export default function CreateListingScreen() {
             setShippingCost("");
             setPickupOnly(false);
             setIsNegotiable(false);
+            setListingType("C2C");
             router.push("/(tabs)");
           },
         },
@@ -331,6 +354,60 @@ export default function CreateListingScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
+        {/* Listing Type */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            Listing Type <Text style={styles.required}>*</Text>
+          </Text>
+          <View style={styles.listingTypeRow}>
+            <TouchableOpacity
+              style={[
+                styles.listingTypeChip,
+                listingType === "C2C" && styles.listingTypeChipActive,
+              ]}
+              onPress={() => handleListingTypeChange("C2C")}
+            >
+              <Text
+                style={[
+                  styles.listingTypeText,
+                  listingType === "C2C" && styles.listingTypeTextActive,
+                ]}
+              >
+                Particulier (C2C)
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.listingTypeChip,
+                listingType === "B2C" && styles.listingTypeChipActive,
+                user?.accountType === "C2C" && styles.listingTypeChipLocked,
+              ]}
+              onPress={() => handleListingTypeChange("B2C")}
+            >
+              <Ionicons
+                name={user?.accountType === "C2C" ? "lock-closed" : "storefront"}
+                size={14}
+                color={
+                  listingType === "B2C"
+                    ? "#4ECDC4"
+                    : user?.accountType === "C2C"
+                    ? "#B2BEC3"
+                    : "#636E72"
+                }
+              />
+              <Text
+                style={[
+                  styles.listingTypeText,
+                  listingType === "B2C" && styles.listingTypeTextActive,
+                  user?.accountType === "C2C" && styles.listingTypeTextLocked,
+                ]}
+              >
+                Shop Pro (B2C)
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Images Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
@@ -834,5 +911,40 @@ const styles = StyleSheet.create({
   },
   bottomSpacing: {
     height: 40,
+  },
+  listingTypeRow: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  listingTypeChip: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: "#F5F5F5",
+    borderWidth: 2,
+    borderColor: "transparent",
+  },
+  listingTypeChipActive: {
+    backgroundColor: "#E5F9F8",
+    borderColor: "#4ECDC4",
+  },
+  listingTypeChipLocked: {
+    backgroundColor: "#FAFAFA",
+    borderColor: "#E5E5EA",
+  },
+  listingTypeText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#636E72",
+  },
+  listingTypeTextActive: {
+    color: "#4ECDC4",
+  },
+  listingTypeTextLocked: {
+    color: "#B2BEC3",
   },
 });

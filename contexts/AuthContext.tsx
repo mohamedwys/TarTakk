@@ -20,6 +20,9 @@ interface User {
   phoneNumber?: string;
   location?: string;
   bio?: string;
+  accountType: "B2B" | "B2C" | "C2C" | null;
+  companyName: string | null;
+  isVerified: boolean;
 }
 
 interface AuthContextType {
@@ -79,6 +82,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     emailVerified: authUser.email_confirmed_at
       ? new Date(authUser.email_confirmed_at)
       : undefined,
+    accountType: null,
+    companyName: null,
+    isVerified: !!authUser.email_confirmed_at,
   });
 
   /**
