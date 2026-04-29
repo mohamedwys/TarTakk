@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -41,8 +41,13 @@ export default function CheckoutScreen() {
   const currency = items[0]?.product?.currency ?? 'MAD';
   const grandTotal = totalAmount + SHIPPING_FEE;
 
+  useEffect(() => {
+    if (isEmpty && !isProcessing) {
+      router.replace('/(tabs)');
+    }
+  }, [isEmpty, isProcessing, router]);
+
   if (isEmpty) {
-    router.replace('/(tabs)');
     return null;
   }
 
