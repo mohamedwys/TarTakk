@@ -7,6 +7,7 @@ import {
   productsAPI,
   userAPI,
 } from "@/lib/api";
+import { useEnv } from "@/src/env";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -35,6 +36,7 @@ const conditions = ["New", "Like New", "Good", "Fair"];
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { config } = useEnv();
   const [refreshing, setRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -60,6 +62,7 @@ export default function HomeScreen() {
         limit: 6,
         sortBy: "createdAt",
         sortOrder: "desc",
+        listingType: config.listingTypeFilter,
       });
       setFeaturedProducts(response.products || []);
     } catch (error: any) {
@@ -95,10 +98,14 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchUserData();
-    fetchFeaturedProducts();
     fetchNotificationCount();
     fetchFavorites();
   }, []);
+
+  useEffect(() => {
+    fetchFeaturedProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.listingTypeFilter]);
 
   const onRefresh = async () => {
     setRefreshing(true);

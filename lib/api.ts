@@ -573,7 +573,8 @@ export const productsAPI = {
       search_term: params?.search ?? null,
       region_filter: params?.region ?? params?.region_id ?? null,
       category_filter: categoryId,
-      listing_type_filter: params?.type ?? params?.listing_type ?? null,
+      listing_type_filter:
+        params?.type ?? params?.listing_type ?? params?.listingType ?? null,
       min_price:
         params?.minPrice !== undefined ? Number(params.minPrice) : null,
       max_price:

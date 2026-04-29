@@ -1,4 +1,5 @@
 import { productsAPI } from "@/lib/api";
+import { useEnv } from "@/src/env";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -105,6 +106,7 @@ const conditions = [
 
 export default function ExploreScreen() {
   const router = useRouter();
+  const { config } = useEnv();
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter modal state
@@ -125,7 +127,8 @@ export default function ExploreScreen() {
 
   useEffect(() => {
     fetchCategoryCounts();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.listingTypeFilter]);
 
   const fetchCategoryCounts = async () => {
     try {
@@ -137,6 +140,7 @@ export default function ExploreScreen() {
           const response = await productsAPI.getProducts({
             category: category.name,
             limit: 1,
+            listingType: config.listingTypeFilter,
           });
           return { name: category.name, count: response.pagination.total };
         } catch (error) {
