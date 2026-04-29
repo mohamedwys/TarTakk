@@ -32,6 +32,11 @@ i18n
   });
 
 async function loadStoredLanguage() {
+  // ⚡ Skip on SSR (no window/localStorage)
+  if (typeof window === 'undefined') {
+    return;
+  }
+  
   try {
     const stored = await AsyncStorage.getItem(STORAGE_KEY);
     if (stored === 'fr' || stored === 'ar' || stored === 'en') {
@@ -45,6 +50,11 @@ async function loadStoredLanguage() {
 }
 
 i18n.on('languageChanged', (lng) => {
+  // ⚡ Skip on SSR
+  if (typeof window === 'undefined') {
+    return;
+  }
+  
   AsyncStorage.setItem(STORAGE_KEY, lng).catch((err) => {
     console.warn('[i18n] Failed to save language:', err);
   });
