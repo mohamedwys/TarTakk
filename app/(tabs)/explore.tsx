@@ -3,6 +3,7 @@ import { useEnv } from "@/src/env";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Modal,
   ScrollView,
@@ -107,6 +108,7 @@ const conditions = [
 export default function ExploreScreen() {
   const router = useRouter();
   const { config } = useEnv();
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter modal state
@@ -279,11 +281,26 @@ export default function ExploreScreen() {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
+  const conditionLabel = (label: string) => {
+    switch (label) {
+      case "New":
+        return t('explore.conditionNew');
+      case "Like New":
+        return t('explore.conditionLikeNew');
+      case "Good":
+        return t('explore.conditionGood');
+      case "Fair":
+        return t('explore.conditionFair');
+      default:
+        return label;
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Explore</Text>
+        <Text style={styles.headerTitle}>{t('explore.title')}</Text>
         <TouchableOpacity
           style={styles.filterButton}
           onPress={() => setFilterModalVisible(true)}
@@ -304,7 +321,7 @@ export default function ExploreScreen() {
         <Ionicons name="search-outline" size={20} color="#636E72" />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search products, brands..."
+          placeholder={t('explore.searchPlaceholder')}
           placeholderTextColor="#B2BEC3"
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -322,9 +339,9 @@ export default function ExploreScreen() {
         {/* Categories */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Categories</Text>
+            <Text style={styles.sectionTitle}>{t('explore.categories')}</Text>
             <TouchableOpacity onPress={handleSeeAllCategories}>
-              <Text style={styles.seeAll}>See All</Text>
+              <Text style={styles.seeAll}>{t('explore.seeAll')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -353,7 +370,7 @@ export default function ExploreScreen() {
                   {isLoadingCounts
                     ? "..."
                     : categoryCounts[category.name] || category.count}{" "}
-                  items
+                  {t('explore.items')}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -363,7 +380,7 @@ export default function ExploreScreen() {
         {/* Browse by Price */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Browse by Price</Text>
+            <Text style={styles.sectionTitle}>{t('explore.browseByPrice')}</Text>
           </View>
 
           <View style={styles.priceList}>
@@ -384,7 +401,7 @@ export default function ExploreScreen() {
                   </View>
                   <View>
                     <Text style={styles.priceLabel}>{range.label}</Text>
-                    <Text style={styles.priceSubtext}>Find great deals</Text>
+                    <Text style={styles.priceSubtext}>{t('explore.findGreatDeals')}</Text>
                   </View>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color="#B2BEC3" />
@@ -396,7 +413,7 @@ export default function ExploreScreen() {
         {/* Browse by Condition */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Browse by Condition</Text>
+            <Text style={styles.sectionTitle}>{t('explore.browseByCondition')}</Text>
           </View>
 
           <ScrollView
@@ -416,7 +433,7 @@ export default function ExploreScreen() {
                   size={20}
                   color="#4ECDC4"
                 />
-                <Text style={styles.conditionText}>{condition.label}</Text>
+                <Text style={styles.conditionText}>{conditionLabel(condition.label)}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -424,7 +441,7 @@ export default function ExploreScreen() {
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Quick Actions</Text>
+            <Text style={styles.sectionTitle}>{t('explore.quickActions')}</Text>
           </View>
 
           <View style={styles.quickActions}>
@@ -440,7 +457,7 @@ export default function ExploreScreen() {
               <View style={styles.quickActionIcon}>
                 <Ionicons name="trending-up" size={28} color="#FF6B6B" />
               </View>
-              <Text style={styles.quickActionText}>Trending</Text>
+              <Text style={styles.quickActionText}>{t('explore.trending')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -455,7 +472,7 @@ export default function ExploreScreen() {
               <View style={styles.quickActionIcon}>
                 <Ionicons name="flash" size={28} color="#FFB84D" />
               </View>
-              <Text style={styles.quickActionText}>New Arrivals</Text>
+              <Text style={styles.quickActionText}>{t('explore.newArrivals')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -470,7 +487,7 @@ export default function ExploreScreen() {
               <View style={styles.quickActionIcon}>
                 <Ionicons name="location" size={28} color="#4ECDC4" />
               </View>
-              <Text style={styles.quickActionText}>Nearby</Text>
+              <Text style={styles.quickActionText}>{t('explore.nearby')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -485,7 +502,7 @@ export default function ExploreScreen() {
               <View style={styles.quickActionIcon}>
                 <Ionicons name="pricetag" size={28} color="#A29BFE" />
               </View>
-              <Text style={styles.quickActionText}>Best Deals</Text>
+              <Text style={styles.quickActionText}>{t('explore.bestDeals')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -493,7 +510,7 @@ export default function ExploreScreen() {
         {/* Popular Searches */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Popular Searches</Text>
+            <Text style={styles.sectionTitle}>{t('explore.popularSearches')}</Text>
           </View>
 
           <View style={styles.popularSearches}>
@@ -536,12 +553,12 @@ export default function ExploreScreen() {
             >
               <Ionicons name="close" size={24} color="#2D3436" />
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>Advanced Filters</Text>
+            <Text style={styles.modalTitle}>{t('explore.advancedFilters')}</Text>
             <TouchableOpacity
               style={styles.clearButton}
               onPress={handleClearFilters}
             >
-              <Text style={styles.clearButtonText}>Clear All</Text>
+              <Text style={styles.clearButtonText}>{t('explore.clearAll')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -551,10 +568,10 @@ export default function ExploreScreen() {
           >
             {/* Price Range */}
             <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>Price Range</Text>
+              <Text style={styles.filterSectionTitle}>{t('explore.priceRange')}</Text>
               <View style={styles.priceInputs}>
                 <View style={styles.priceInputContainer}>
-                  <Text style={styles.priceInputLabel}>Min Price</Text>
+                  <Text style={styles.priceInputLabel}>{t('explore.minPrice')}</Text>
                   <View style={styles.inputContainer}>
                     <Text style={styles.currencySymbol}>₦</Text>{" "}
                     <TextInput
@@ -567,12 +584,12 @@ export default function ExploreScreen() {
                   </View>
                 </View>
                 <View style={styles.priceInputContainer}>
-                  <Text style={styles.priceInputLabel}>Max Price</Text>
+                  <Text style={styles.priceInputLabel}>{t('explore.maxPrice')}</Text>
                   <View style={styles.inputContainer}>
                     <Text style={styles.currencySymbol}>₦</Text>{" "}
                     <TextInput
                       style={styles.priceInput}
-                      placeholder="No limit"
+                      placeholder={t('explore.noLimit')}
                       value={filters.maxPrice}
                       onChangeText={(value) => updateFilter("maxPrice", value)}
                       keyboardType="numeric"
@@ -584,7 +601,7 @@ export default function ExploreScreen() {
 
             {/* Condition */}
             <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>Condition</Text>
+              <Text style={styles.filterSectionTitle}>{t('explore.condition')}</Text>
               <View style={styles.conditionOptions}>
                 {conditions.map((condition) => (
                   <TouchableOpacity
@@ -619,7 +636,7 @@ export default function ExploreScreen() {
                           styles.activeConditionOptionText,
                       ]}
                     >
-                      {condition.label}
+                      {conditionLabel(condition.label)}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -628,18 +645,18 @@ export default function ExploreScreen() {
 
             {/* Location */}
             <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>Location</Text>
+              <Text style={styles.filterSectionTitle}>{t('explore.location')}</Text>
               <View style={styles.inputContainer}>
                 <Ionicons name="location-outline" size={20} color="#B2BEC3" />
                 <TextInput
                   style={styles.locationInput}
-                  placeholder="City, State or ZIP code"
+                  placeholder={t('explore.locationPlaceholder')}
                   value={filters.location}
                   onChangeText={(value) => updateFilter("location", value)}
                 />
               </View>
               <View style={styles.distanceOptions}>
-                <Text style={styles.distanceLabel}>Distance:</Text>
+                <Text style={styles.distanceLabel}>{t('explore.distance')}</Text>
                 {["5", "10", "25", "50"].map((distance) => (
                   <TouchableOpacity
                     key={distance}
@@ -657,7 +674,7 @@ export default function ExploreScreen() {
                           styles.activeDistanceOptionText,
                       ]}
                     >
-                      {distance} miles
+                      {distance} {t('explore.miles')}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -666,13 +683,13 @@ export default function ExploreScreen() {
 
             {/* Date Posted */}
             <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>Date Posted</Text>
+              <Text style={styles.filterSectionTitle}>{t('explore.datePosted')}</Text>
               <View style={styles.dateOptions}>
                 {[
-                  { label: "Any time", value: "" },
-                  { label: "Today", value: "today" },
-                  { label: "This week", value: "week" },
-                  { label: "This month", value: "month" },
+                  { label: t('explore.anyTime'), value: "" },
+                  { label: t('explore.today'), value: "today" },
+                  { label: t('explore.thisWeek'), value: "week" },
+                  { label: t('explore.thisMonth'), value: "month" },
                 ].map((option) => (
                   <TouchableOpacity
                     key={option.value}
@@ -699,14 +716,14 @@ export default function ExploreScreen() {
 
             {/* Sort By */}
             <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>Sort By</Text>
+              <Text style={styles.filterSectionTitle}>{t('explore.sortBy')}</Text>
               <View style={styles.sortOptions}>
                 {[
-                  { label: "Relevance", value: "relevance" },
-                  { label: "Price: Low to High", value: "price-low" },
-                  { label: "Price: High to Low", value: "price-high" },
-                  { label: "Date: Newest First", value: "date-new" },
-                  { label: "Distance", value: "distance" },
+                  { label: t('explore.sortRelevance'), value: "relevance" },
+                  { label: t('explore.sortPriceLow'), value: "price-low" },
+                  { label: t('explore.sortPriceHigh'), value: "price-high" },
+                  { label: t('explore.sortDateNew'), value: "date-new" },
+                  { label: t('explore.sortDistance'), value: "distance" },
                 ].map((option) => (
                   <TouchableOpacity
                     key={option.value}
@@ -737,13 +754,13 @@ export default function ExploreScreen() {
               style={styles.cancelButton}
               onPress={() => setFilterModalVisible(false)}
             >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+              <Text style={styles.cancelButtonText}>{t('explore.cancel')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.applyButton}
               onPress={handleApplyFilters}
             >
-              <Text style={styles.applyButtonText}>Apply Filters</Text>
+              <Text style={styles.applyButtonText}>{t('explore.applyFilters')}</Text>
             </TouchableOpacity>
           </View>
         </View>

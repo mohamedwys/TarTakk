@@ -1,19 +1,21 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useEnv } from '@/src/env';
 
 export default function CartScreen() {
   const { config } = useEnv();
+  const { t } = useTranslation();
 
   return (
     <View style={styles.container}>
       <Ionicons name="cart-outline" size={64} color={config.theme.primary} />
       <Text style={[styles.title, { color: config.theme.textPrimary }]}>
-        Your Cart
+        {t('cart.title')}
       </Text>
       <Text style={[styles.subtitle, { color: config.theme.textSecondary }]}>
-        Coming soon — Shop Pro checkout will be available here.
+        {t('cart.comingSoon')}
       </Text>
     </View>
   );

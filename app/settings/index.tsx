@@ -34,7 +34,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { config } = useEnv();
   const theme = config.theme;
-  const { i18n: i18nInstance } = useTranslation();
+  const { t, i18n: i18nInstance } = useTranslation();
 
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -70,10 +70,10 @@ export default function SettingsScreen() {
   };
 
 const handleLogout = async () => {
-  Alert.alert("Logout", "Are you sure you want to logout?", [
-    { text: "Cancel", style: "cancel" },
+  Alert.alert(t('settings.logoutConfirmTitle'), t('settings.logoutConfirmMessage'), [
+    { text: t('common.cancel'), style: "cancel" },
     {
-      text: "Logout",
+      text: t('settings.logout'),
       style: "destructive",
       onPress: async () => {
         try {
@@ -88,7 +88,7 @@ const handleLogout = async () => {
 
           Toast.show({
             type: "success",
-            text1: "Logged out successfully",
+            text1: t('settings.logoutSuccess'),
           });
 
           router.replace("/(auth)/login");
@@ -96,8 +96,8 @@ const handleLogout = async () => {
           console.error('Logout error:', error);
           Toast.show({
             type: "error",
-            text1: "Logout failed",
-            text2: error.message || "Please try again",
+            text1: t('settings.logoutFailed'),
+            text2: error.message || t('settings.tryAgain'),
           });
         }
       },
@@ -109,7 +109,7 @@ const handleLogout = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
       Toast.show({
         type: "error",
-        text1: "All fields are required",
+        text1: t('settings.allFieldsRequired'),
       });
       return;
     }
@@ -117,7 +117,7 @@ const handleLogout = async () => {
     if (newPassword !== confirmPassword) {
       Toast.show({
         type: "error",
-        text1: "New passwords do not match",
+        text1: t('settings.passwordsMismatch'),
       });
       return;
     }
@@ -125,7 +125,7 @@ const handleLogout = async () => {
     if (newPassword.length < 6) {
       Toast.show({
         type: "error",
-        text1: "Password must be at least 6 characters",
+        text1: t('settings.passwordTooShort'),
       });
       return;
     }
@@ -141,13 +141,13 @@ const handleLogout = async () => {
       setConfirmPassword("");
       Toast.show({
         type: "success",
-        text1: "Password changed successfully",
+        text1: t('settings.passwordChanged'),
       });
     } catch (error: any) {
       console.error("Change password error:", error);
       Toast.show({
         type: "error",
-        text1: error.message || "Failed to change password",
+        text1: error.message || t('settings.passwordChangeFailed'),
       });
     } finally {
       setIsLoading(false);
@@ -195,7 +195,7 @@ const handleLogout = async () => {
         >
           <Ionicons name="arrow-back" size={24} color={theme.textPrimary} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Settings</Text>
+        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>{t('settings.title')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -203,7 +203,7 @@ const handleLogout = async () => {
         {/* Account Section */}
         <View style={[styles.section, { backgroundColor: theme.surface }]}>
           {renderSectionHeader(
-            "Account",
+            t('settings.account'),
             "account",
             "person-outline",
             theme.primary
@@ -224,7 +224,7 @@ const handleLogout = async () => {
                   >
                     <Ionicons name="person-outline" size={22} color={theme.primary} />
                   </View>
-                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>Edit Profile</Text>
+                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>{t('settings.editProfile')}</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
               </TouchableOpacity>
@@ -246,7 +246,7 @@ const handleLogout = async () => {
                       color={theme.warning}
                     />
                   </View>
-                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>Change Password</Text>
+                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>{t('settings.changePassword')}</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
               </TouchableOpacity>
@@ -262,7 +262,7 @@ const handleLogout = async () => {
                 <Ionicons name="language-outline" size={20} color={theme.textInverse} />
               </View>
               <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
-                Langue / اللغة / Language
+                {t('settings.language')}
               </Text>
             </View>
           </View>
@@ -336,7 +336,7 @@ const handleLogout = async () => {
         {/* Notifications Section */}
         <View style={[styles.section, { backgroundColor: theme.surface }]}>
           {renderSectionHeader(
-            "Notifications",
+            t('settings.notifications'),
             "notifications",
             "notifications-outline",
             theme.accent
@@ -358,7 +358,7 @@ const handleLogout = async () => {
                       color={theme.accent}
                     />
                   </View>
-                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>Push Notifications</Text>
+                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>{t('settings.pushNotifications')}</Text>
                 </View>
                 <Switch
                   value={pushNotifications}
@@ -378,7 +378,7 @@ const handleLogout = async () => {
                   >
                     <Ionicons name="mail-outline" size={22} color={theme.primary} />
                   </View>
-                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>Email Notifications</Text>
+                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>{t('settings.emailNotifications')}</Text>
                 </View>
                 <Switch
                   value={emailNotifications}
@@ -402,7 +402,7 @@ const handleLogout = async () => {
                       color={theme.primary}
                     />
                   </View>
-                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>Message Notifications</Text>
+                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>{t('settings.messageNotifications')}</Text>
                 </View>
                 <Switch
                   value={messageNotifications}
@@ -418,7 +418,7 @@ const handleLogout = async () => {
         {/* Privacy Section */}
         <View style={[styles.section, { backgroundColor: theme.surface }]}>
           {renderSectionHeader(
-            "Privacy",
+            t('settings.privacy'),
             "privacy",
             "shield-checkmark-outline",
             theme.primaryDark
@@ -443,7 +443,7 @@ const handleLogout = async () => {
                       color={theme.primaryDark}
                     />
                   </View>
-                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>Privacy Policy</Text>
+                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>{t('settings.privacyPolicy')}</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
               </TouchableOpacity>
@@ -465,7 +465,7 @@ const handleLogout = async () => {
                       color={theme.primary}
                     />
                   </View>
-                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>Terms of Service</Text>
+                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>{t('settings.termsOfService')}</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
               </TouchableOpacity>
@@ -476,7 +476,7 @@ const handleLogout = async () => {
         {/* Support Section */}
         <View style={[styles.section, { backgroundColor: theme.surface }]}>
           {renderSectionHeader(
-            "Support",
+            t('settings.support'),
             "support",
             "help-circle-outline",
             theme.primary
@@ -501,7 +501,7 @@ const handleLogout = async () => {
                       color={theme.primary}
                     />
                   </View>
-                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>Help Center</Text>
+                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>{t('settings.helpCenter')}</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
               </TouchableOpacity>
@@ -519,7 +519,7 @@ const handleLogout = async () => {
                   >
                     <Ionicons name="mail-outline" size={22} color={theme.primaryDark} />
                   </View>
-                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>Contact Us</Text>
+                  <Text style={[styles.settingText, { color: theme.textPrimary }]}>{t('settings.contactUs')}</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
               </TouchableOpacity>
@@ -539,7 +539,7 @@ const handleLogout = async () => {
               >
                 <Ionicons name="log-out-outline" size={22} color={theme.error} />
               </View>
-              <Text style={[styles.settingText, { color: theme.error }]}>Logout</Text>
+              <Text style={[styles.settingText, { color: theme.error }]}>{t('settings.logout')}</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
           </TouchableOpacity>
@@ -564,7 +564,7 @@ const handleLogout = async () => {
             >
               <Ionicons name="close" size={24} color={theme.textPrimary} />
             </TouchableOpacity>
-            <Text style={[styles.modalTitle, { color: theme.textPrimary }]}>Change Password</Text>
+            <Text style={[styles.modalTitle, { color: theme.textPrimary }]}>{t('settings.changePassword')}</Text>
             <View style={{ width: 40 }} />
           </View>
 
@@ -573,7 +573,7 @@ const handleLogout = async () => {
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.inputGroup}>
-              <Text style={[styles.inputLabel, { color: theme.textPrimary }]}>Current Password</Text>
+              <Text style={[styles.inputLabel, { color: theme.textPrimary }]}>{t('settings.currentPassword')}</Text>
               <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
                 <Ionicons
                   name="lock-closed-outline"
@@ -582,7 +582,7 @@ const handleLogout = async () => {
                 />
                 <TextInput
                   style={[styles.input, { color: theme.textPrimary }]}
-                  placeholder="Enter current password"
+                  placeholder={t('settings.currentPasswordPlaceholder')}
                   placeholderTextColor={theme.textSecondary}
                   value={currentPassword}
                   onChangeText={setCurrentPassword}
@@ -593,7 +593,7 @@ const handleLogout = async () => {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={[styles.inputLabel, { color: theme.textPrimary }]}>New Password</Text>
+              <Text style={[styles.inputLabel, { color: theme.textPrimary }]}>{t('settings.newPassword')}</Text>
               <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
                 <Ionicons
                   name="lock-closed-outline"
@@ -602,7 +602,7 @@ const handleLogout = async () => {
                 />
                 <TextInput
                   style={[styles.input, { color: theme.textPrimary }]}
-                  placeholder="Enter new password"
+                  placeholder={t('settings.newPasswordPlaceholder')}
                   placeholderTextColor={theme.textSecondary}
                   value={newPassword}
                   onChangeText={setNewPassword}
@@ -613,7 +613,7 @@ const handleLogout = async () => {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={[styles.inputLabel, { color: theme.textPrimary }]}>Confirm New Password</Text>
+              <Text style={[styles.inputLabel, { color: theme.textPrimary }]}>{t('settings.confirmPassword')}</Text>
               <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
                 <Ionicons
                   name="lock-closed-outline"
@@ -622,7 +622,7 @@ const handleLogout = async () => {
                 />
                 <TextInput
                   style={[styles.input, { color: theme.textPrimary }]}
-                  placeholder="Confirm new password"
+                  placeholder={t('settings.confirmPasswordPlaceholder')}
                   placeholderTextColor={theme.textSecondary}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
@@ -642,7 +642,7 @@ const handleLogout = async () => {
               disabled={isLoading}
             >
               <Text style={[styles.changePasswordButtonText, { color: theme.textInverse }]}>
-                {isLoading ? "Changing..." : "Change Password"}
+                {isLoading ? t('settings.changing') : t('settings.changePassword')}
               </Text>
             </TouchableOpacity>
           </ScrollView>

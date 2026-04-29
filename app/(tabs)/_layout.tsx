@@ -6,6 +6,7 @@ import { useEnv } from '@/src/env';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs, useRouter, usePathname } from 'expo-router';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function TabLayout() {
   const { totalUnreadCount } = useUnreadCount();
   const { config, current } = useEnv();
+  const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -60,7 +62,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: 'Home',
+            title: t('tabs.home'),
             tabBarIcon: ({ color, size, focused }) => (
               <AnimatedTabIcon
                 name={focused ? 'home' : 'home-outline'}
@@ -74,7 +76,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="explore"
           options={{
-            title: 'Explore',
+            title: t('tabs.explore'),
             tabBarIcon: ({ color, size, focused }) => (
               <AnimatedTabIcon
                 name={focused ? 'search' : 'search-outline'}
@@ -88,7 +90,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="create"
           options={{
-            title: 'Sell',
+            title: t('tabs.sell'),
             tabBarIcon: ({ color, size, focused }) => (
               <AnimatedTabIcon
                 name="add-circle"
@@ -97,14 +99,14 @@ export default function TabLayout() {
                 focused={focused}
               />
             ),
-            tabBarLabel: 'Sell',
+            tabBarLabel: t('tabs.sell'),
             href: current === 'marketplace_c2c' ? '/(tabs)/create' : null,
           }}
         />
         <Tabs.Screen
           name="cart"
           options={{
-            title: 'Cart',
+            title: t('tabs.cart'),
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="cart-outline" size={size} color={color} />
             ),
@@ -114,7 +116,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="messages"
           options={{
-            title: 'Messages',
+            title: t('tabs.messages'),
             tabBarIcon: ({ color, size, focused }) => (
               <View>
                 <AnimatedTabIcon
@@ -139,7 +141,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="profile"
           options={{
-            title: 'Profile',
+            title: t('tabs.profile'),
             tabBarIcon: ({ color, size, focused }) => (
               <AnimatedTabIcon
                 name={focused ? 'person' : 'person-outline'}

@@ -9,6 +9,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
@@ -24,6 +25,7 @@ import Toast from "react-native-toast-message";
 export default function ProfileScreen() {
   const router = useRouter();
   const { config } = useEnv();
+  const { t } = useTranslation();
   const theme = config.theme;
   const [activeTab, setActiveTab] = useState<"listings" | "sold" | "reviews">(
     "listings"
@@ -193,10 +195,10 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert("Logout", "Are you sure you want to logout?", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t('profile.logoutConfirmTitle'), t('profile.logoutConfirmMessage'), [
+      { text: t('common.cancel'), style: "cancel" },
       {
-        text: "Logout",
+        text: t('profile.logout'),
         style: "destructive",
         onPress: async () => {
           try {
@@ -205,8 +207,8 @@ export default function ProfileScreen() {
           } catch (error) {
             Toast.show({
               type: "error",
-              text1: "Error",
-              text2: "Failed to logout. Please try again.",
+              text1: t('common.error'),
+              text2: t('profile.logoutFailed'),
             });
           }
         },
@@ -231,12 +233,12 @@ export default function ProfileScreen() {
         <Text style={[styles.listingPrice, { color: theme.textPrimary }]}>₦{item.price.toLocaleString()}</Text>
         <View style={styles.listingMeta}>
           <Ionicons name="eye-outline" size={14} color={theme.textSecondary} />
-          <Text style={[styles.listingViews, { color: theme.textSecondary }]}>{item.views || 0} views</Text>
+          <Text style={[styles.listingViews, { color: theme.textSecondary }]}>{item.views || 0} {t('profile.views')}</Text>
         </View>
       </View>
       {item.status === "sold" && (
         <View style={[styles.soldBadge, { backgroundColor: theme.accent }]}>
-          <Text style={[styles.soldText, { color: theme.textInverse }]}>SOLD</Text>
+          <Text style={[styles.soldText, { color: theme.textInverse }]}>{t('profile.soldBadge')}</Text>
         </View>
       )}
       <TouchableOpacity
@@ -252,7 +254,7 @@ export default function ProfileScreen() {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
         <ActivityIndicator size="large" color={theme.primary} />
-        <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Loading profile...</Text>
+        <Text style={[styles.loadingText, { color: theme.textSecondary }]}>{t('profile.loading')}</Text>
       </View>
     );
   }
@@ -263,7 +265,7 @@ export default function ProfileScreen() {
         <Ionicons name="cloud-offline-outline" size={48} color={theme.textSecondary} />
         <Text style={[styles.errorText, { color: theme.textSecondary }]}>{userError}</Text>
         <TouchableOpacity style={[styles.retryButton, { backgroundColor: theme.primary }]} onPress={fetchUserProfile}>
-          <Text style={[styles.retryText, { color: theme.textInverse }]}>Retry</Text>
+          <Text style={[styles.retryText, { color: theme.textInverse }]}>{t('common.retry')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -273,7 +275,7 @@ export default function ProfileScreen() {
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       {/* Header */}
       <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
-        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Profile</Text>
+        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>{t('profile.title')}</Text>
         <TouchableOpacity
           style={[styles.settingsButton, { backgroundColor: theme.background }]}
           onPress={() => router.push("/settings")}
@@ -287,7 +289,7 @@ export default function ProfileScreen() {
         {!user ? (
           <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
             <ActivityIndicator size="large" color={theme.primary} />
-            <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Loading profile...</Text>
+            <Text style={[styles.loadingText, { color: theme.textSecondary }]}>{t('profile.loading')}</Text>
           </View>
         ) : (
           <>
@@ -340,23 +342,23 @@ export default function ProfileScreen() {
                   <Text style={[styles.statValue, { color: theme.textPrimary }]}>{user.rating || 0}</Text>
                   <View style={styles.statLabelRow}>
                     <Ionicons name="star" size={14} color="#FFB84D" />
-                    <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Rating</Text>
+                    <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{t('profile.rating')}</Text>
                   </View>
                 </View>
                 <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
                 <View style={styles.statItem}>
                   <Text style={[styles.statValue, { color: theme.textPrimary }]}>{user.totalReviews || 0}</Text>
-                  <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Reviews</Text>
+                  <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{t('profile.reviews')}</Text>
                 </View>
                 <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
                 <View style={styles.statItem}>
                   <Text style={[styles.statValue, { color: theme.textPrimary }]}>{user.totalSales || 0}</Text>
-                  <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Sales</Text>
+                  <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{t('profile.sales')}</Text>
                 </View>
               </View>
 
               <AnimatedButton
-                title="Edit Profile"
+                title={t('profile.editProfile')}
                 icon="create-outline"
                 variant="secondary"
                 onPress={() => router.push("/profile/edit")}
@@ -370,9 +372,9 @@ export default function ProfileScreen() {
                   <Ionicons name="location-outline" size={20} color={theme.primary} />
                 </View>
                 <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Location</Text>
+                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>{t('profile.location')}</Text>
                   <Text style={[styles.infoValue, { color: theme.textPrimary }]}>
-                    {user.location || "Not set"}
+                    {user.location || t('profile.notSet')}
                   </Text>
                 </View>
               </View>
@@ -382,9 +384,9 @@ export default function ProfileScreen() {
                   <Ionicons name="call-outline" size={20} color={theme.primary} />
                 </View>
                 <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Phone</Text>
+                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>{t('profile.phone')}</Text>
                   <Text style={[styles.infoValue, { color: theme.textPrimary }]}>
-                    {user.phoneNumber || "Not set"}
+                    {user.phoneNumber || t('profile.notSet')}
                   </Text>
                 </View>
               </View>
@@ -394,21 +396,21 @@ export default function ProfileScreen() {
                   <Ionicons name="calendar-outline" size={20} color={theme.primary} />
                 </View>
                 <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Member Since</Text>
+                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>{t('profile.memberSince')}</Text>
                   <Text style={[styles.infoValue, { color: theme.textPrimary }]}>
                     {user.createdAt
                       ? new Date(user.createdAt).toLocaleDateString("en-US", {
                           month: "short",
                           year: "numeric",
                         })
-                      : "Unknown"}
+                      : t('common.unknown')}
                   </Text>
                 </View>
               </View>
             </View>
 
             <View style={[styles.listingsSection, { backgroundColor: theme.surface }]}>
-              <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>My Listings</Text>
+              <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>{t('profile.myListings')}</Text>
 
               {/* Tabs */}
               <View style={[styles.tabs, { borderBottomColor: theme.border }]}>
@@ -426,7 +428,7 @@ export default function ProfileScreen() {
                       activeTab === "listings" && { color: theme.primary },
                     ]}
                   >
-                    Active ({activeListings.length})
+                    {t('profile.active')} ({activeListings.length})
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -443,7 +445,7 @@ export default function ProfileScreen() {
                       activeTab === "sold" && { color: theme.primary },
                     ]}
                   >
-                    Sold ({soldListings.length})
+                    {t('profile.sold')} ({soldListings.length})
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -460,7 +462,7 @@ export default function ProfileScreen() {
                       activeTab === "reviews" && { color: theme.primary },
                     ]}
                   >
-                    Reviews ({reviews.length})
+                    {t('profile.reviews')} ({reviews.length})
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -470,7 +472,7 @@ export default function ProfileScreen() {
                 reviewsLoading ? (
                   <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
                     <ActivityIndicator size="large" color={theme.primary} />
-                    <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Loading reviews...</Text>
+                    <Text style={[styles.loadingText, { color: theme.textSecondary }]}>{t('profile.loadingReviews')}</Text>
                   </View>
                 ) : reviewsError ? (
                   <View style={[styles.errorContainer, { backgroundColor: theme.background }]}>
@@ -484,7 +486,7 @@ export default function ProfileScreen() {
                       style={[styles.retryButton, { backgroundColor: theme.primary }]}
                       onPress={fetchUserReviews}
                     >
-                      <Text style={[styles.retryText, { color: theme.textInverse }]}>Retry</Text>
+                      <Text style={[styles.retryText, { color: theme.textInverse }]}>{t('common.retry')}</Text>
                     </TouchableOpacity>
                   </View>
                 ) : reviews.length > 0 ? (
@@ -527,7 +529,7 @@ export default function ProfileScreen() {
                           }
                         >
                           <Text style={[styles.productLinkText, { color: theme.primary }]}>
-                            About: {review.product.title}
+                            {t('profile.aboutProduct', { title: review.product.title })}
                           </Text>
                         </TouchableOpacity>
                       </View>
@@ -540,16 +542,16 @@ export default function ProfileScreen() {
                       size={64}
                       color={theme.textSecondary}
                     />
-                    <Text style={[styles.emptyText, { color: theme.textSecondary }]}>No reviews yet</Text>
+                    <Text style={[styles.emptyText, { color: theme.textSecondary }]}>{t('profile.noReviews')}</Text>
                     <Text style={[styles.emptySubtext, { color: theme.textSecondary }]}>
-                      Reviews from buyers will appear here
+                      {t('profile.reviewsWillAppear')}
                     </Text>
                   </View>
                 )
               ) : listingsLoading ? (
                 <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
                   <ActivityIndicator size="large" color={theme.primary} />
-                  <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Loading listings...</Text>
+                  <Text style={[styles.loadingText, { color: theme.textSecondary }]}>{t('profile.loadingListings')}</Text>
                 </View>
               ) : listingsError ? (
                 <View style={[styles.errorContainer, { backgroundColor: theme.background }]}>
@@ -563,7 +565,7 @@ export default function ProfileScreen() {
                     style={[styles.retryButton, { backgroundColor: theme.primary }]}
                     onPress={fetchUserListings}
                   >
-                    <Text style={[styles.retryText, { color: theme.textInverse }]}>Retry</Text>
+                    <Text style={[styles.retryText, { color: theme.textInverse }]}>{t('common.retry')}</Text>
                   </TouchableOpacity>
                 </View>
               ) : (
@@ -583,12 +585,12 @@ export default function ProfileScreen() {
                     <Ionicons name="cube-outline" size={64} color={theme.textSecondary} />
                     <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
                       {activeTab === "listings"
-                        ? "No active listings yet"
-                        : "No sold items yet"}
+                        ? t('profile.noActiveListings')
+                        : t('profile.noSoldItems')}
                     </Text>
                     {activeTab === "listings" && (
                       <AnimatedButton
-                        title="Create Listing"
+                        title={t('profile.createListing')}
                         icon="add-circle"
                         onPress={() => router.push("/(tabs)/create")}
                         size="large"
@@ -606,7 +608,7 @@ export default function ProfileScreen() {
               >
                 <View style={styles.actionLeft}>
                   <Ionicons name="heart-outline" size={24} color={theme.accent} />
-                  <Text style={[styles.actionText, { color: theme.textPrimary }]}>Favorites</Text>
+                  <Text style={[styles.actionText, { color: theme.textPrimary }]}>{t('profile.favorites')}</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
               </TouchableOpacity>
@@ -617,7 +619,7 @@ export default function ProfileScreen() {
               >
                 <View style={styles.actionLeft}>
                   <Ionicons name="settings-outline" size={24} color={theme.textSecondary} />
-                  <Text style={[styles.actionText, { color: theme.textPrimary }]}>Settings</Text>
+                  <Text style={[styles.actionText, { color: theme.textPrimary }]}>{t('profile.settings')}</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
               </TouchableOpacity>
@@ -632,7 +634,7 @@ export default function ProfileScreen() {
                     size={24}
                     color={theme.textSecondary}
                   />
-                  <Text style={[styles.actionText, { color: theme.textPrimary }]}>Help & Support</Text>
+                  <Text style={[styles.actionText, { color: theme.textPrimary }]}>{t('profile.helpSupport')}</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
               </TouchableOpacity>
@@ -644,7 +646,7 @@ export default function ProfileScreen() {
                 <View style={styles.actionLeft}>
                   <Ionicons name="log-out-outline" size={24} color={theme.error} />
                   <Text style={[styles.actionText, { color: theme.error }]}>
-                    Logout
+                    {t('profile.logout')}
                   </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
