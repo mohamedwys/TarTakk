@@ -2,6 +2,7 @@ import { ScreenTransitions } from "@/constants/transitions";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { UnreadCountProvider } from "@/contexts/UnreadCountContext";
 import { toastConfig } from "@/lib/toastConfig";
+import { EnvProvider } from "@/src/env";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
@@ -140,12 +141,14 @@ function AppContent() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <UnreadCountProvider>
-        <AppContent />
-        <Toast config={toastConfig} />
-      </UnreadCountProvider>
-    </AuthProvider>
+    <EnvProvider>
+      <AuthProvider>
+        <UnreadCountProvider>
+          <AppContent />
+          <Toast config={toastConfig} />
+        </UnreadCountProvider>
+      </AuthProvider>
+    </EnvProvider>
   );
 }
 

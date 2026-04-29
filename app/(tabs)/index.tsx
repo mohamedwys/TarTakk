@@ -1,6 +1,7 @@
 import { FadeInView } from "@/components/AnimatedViews";
 import ProductCard from "@/components/ProductCard";
 import ProductCardSkeleton from "@/components/ProductCardSkeleton";
+import { EnvSwitcher } from "@/src/components/env/EnvSwitcher";
 import {
   favoritesAPI,
   notificationsAPI,
@@ -219,6 +220,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
+      <EnvSwitcher />
       {/* Header */}
       <View style={styles.header}>
         <View>
