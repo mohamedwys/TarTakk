@@ -295,5 +295,27 @@
     "loadFailed": "Failed to load orders",
     "viewDetails": "View details",
     "contactSeller": "Contact seller"
+  },
+  "payment": {
+    "title": "Payment",
+    "connecting": "Connecting to CMI...",
+    "loading": "Loading payment gateway",
+    "secureNotice": "Secure payment via Centre Monétique Interbancaire (CMI)",
+    "doNotClose": "Do not close the app during payment",
+    "cancel": "Cancel payment",
+    "cancelConfirm": "Are you sure you want to cancel the payment?",
+    "successTitle": "Payment Confirmed!",
+    "successMessage": "Your order #{{orderRef}} has been paid successfully. You will receive an email confirmation.",
+    "viewOrder": "View my order",
+    "continueShopping": "Continue shopping",
+    "failureTitle": "Payment Failed",
+    "failureMessage": "The payment could not be processed. No amount has been debited.",
+    "errorReason": "Reason",
+    "tryAgain": "Try again",
+    "backToOrder": "Back to order",
+    "contactSupport": "Contact support",
+    "mockMode": "Test mode — No real payment will be made",
+    "processingPayment": "Processing payment...",
+    "verifyingTransaction": "Verifying transaction..."
   }
 }

@@ -295,5 +295,27 @@
     "loadFailed": "Impossible de charger les commandes",
     "viewDetails": "Voir le détail",
     "contactSeller": "Contacter le vendeur"
+  },
+  "payment": {
+    "title": "Paiement",
+    "connecting": "Connexion à CMI...",
+    "loading": "Chargement de la passerelle de paiement",
+    "secureNotice": "Paiement sécurisé via le Centre Monétique Interbancaire (CMI)",
+    "doNotClose": "Ne fermez pas l'application pendant le paiement",
+    "cancel": "Annuler le paiement",
+    "cancelConfirm": "Êtes-vous sûr de vouloir annuler le paiement ?",
+    "successTitle": "Paiement confirmé !",
+    "successMessage": "Votre commande #{{orderRef}} a été payée avec succès. Vous recevrez une confirmation par email.",
+    "viewOrder": "Voir ma commande",
+    "continueShopping": "Continuer mes achats",
+    "failureTitle": "Échec du paiement",
+    "failureMessage": "Le paiement n'a pas pu être traité. Aucun montant n'a été débité.",
+    "errorReason": "Raison",
+    "tryAgain": "Réessayer",
+    "backToOrder": "Retour à ma commande",
+    "contactSupport": "Contacter le support",
+    "mockMode": "Mode test — Aucun paiement réel ne sera effectué",
+    "processingPayment": "Traitement du paiement...",
+    "verifyingTransaction": "Vérification de la transaction..."
   }
 }

@@ -80,17 +80,21 @@ export default function CheckoutScreen() {
         shippingNotes: notes.trim() || undefined,
       });
 
-      await clearCart();
-
-      const orderRef = orderId.substring(0, 8).toUpperCase();
-      Toast.show({
-        type: 'success',
-        text1: t('checkout.orderSuccess'),
-        text2: t('checkout.orderSuccessMessage', { orderRef }),
-        visibilityTime: 4000,
-      });
-
-      router.replace('/(tabs)');
+      if (paymentMethod === 'cmi') {
+        // Cart is cleared in payment/success.tsx after payment confirmation,
+        // so the user can retry without re-filling the cart.
+        router.replace(`/payment/${orderId}`);
+      } else {
+        await clearCart();
+        const orderRef = orderId.substring(0, 8).toUpperCase();
+        Toast.show({
+          type: 'success',
+          text1: t('checkout.orderSuccess'),
+          text2: t('checkout.orderSuccessMessage', { orderRef }),
+          visibilityTime: 4000,
+        });
+        router.replace('/(tabs)');
+      }
     } catch (err: any) {
       console.error('[checkout] failed:', err);
       Toast.show({
@@ -284,14 +288,11 @@ export default function CheckoutScreen() {
             />
             <PaymentOption
               method="cmi"
-              selected={false}
-              onSelect={() =>
-                Toast.show({ type: 'info', text1: t('product.comingSoon') })
-              }
+              selected={paymentMethod === 'cmi'}
+              onSelect={() => setPaymentMethod('cmi')}
               label={t('checkout.cmi')}
               description={t('checkout.cmiDescription')}
               theme={config.theme}
-              disabled
             />
           </View>
 

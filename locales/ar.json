@@ -295,5 +295,27 @@
     "loadFailed": "تعذر تحميل الطلبات",
     "viewDetails": "عرض التفاصيل",
     "contactSeller": "التواصل مع البائع"
+  },
+  "payment": {
+    "title": "الدفع",
+    "connecting": "الاتصال بـ CMI...",
+    "loading": "تحميل بوابة الدفع",
+    "secureNotice": "دفع آمن عبر CMI",
+    "doNotClose": "لا تغلق التطبيق أثناء الدفع",
+    "cancel": "إلغاء الدفع",
+    "cancelConfirm": "هل أنت متأكد من إلغاء الدفع؟",
+    "successTitle": "تم تأكيد الدفع!",
+    "successMessage": "تم دفع طلبك #{{orderRef}} بنجاح. ستتلقى تأكيدا عبر البريد الإلكتروني.",
+    "viewOrder": "عرض طلبي",
+    "continueShopping": "متابعة التسوق",
+    "failureTitle": "فشل الدفع",
+    "failureMessage": "تعذر معالجة الدفع. لم يتم خصم أي مبلغ.",
+    "errorReason": "السبب",
+    "tryAgain": "إعادة المحاولة",
+    "backToOrder": "العودة إلى الطلب",
+    "contactSupport": "الاتصال بالدعم",
+    "mockMode": "وضع الاختبار — لن يتم إجراء أي دفع فعلي",
+    "processingPayment": "معالجة الدفع...",
+    "verifyingTransaction": "التحقق من المعاملة..."
   }
 }
