@@ -349,7 +349,35 @@
     "dashboard": {
       "welcomeTitle": "مرحبا {{name}} 👋",
       "welcomeSubtitle": "إليك نظرة عامة على نشاطك",
-      "comingSoon": "قريبا"
+      "comingSoon": "قريبا",
+      "myStore": "متجري: {{name}}",
+      "kpi": {
+        "salesThisMonth": "المبيعات هذا الشهر",
+        "pendingOrders": "الطلبات المعلقة",
+        "activeProducts": "المنتجات النشطة",
+        "revenueThisMonth": "الإيرادات هذا الشهر"
+      },
+      "kpiSubtitle": {
+        "salesThisMonth": "{{count}} طلبات مدفوعة",
+        "pendingOrders": "في انتظار الشحن",
+        "activeProducts": "للبيع",
+        "revenueThisMonth": "بدون ضرائب"
+      },
+      "recentOrders": "أحدث الطلبات",
+      "viewAllOrders": "عرض الكل",
+      "noRecentOrders": "لا توجد طلبات حديثة",
+      "orderStatusBadge": {
+        "pending": "في الانتظار",
+        "paid": "مدفوع",
+        "shipped": "تم الشحن",
+        "delivered": "تم التسليم",
+        "cancelled": "ملغى"
+      },
+      "quickActions": "إجراءات سريعة",
+      "createProduct": "إنشاء منتج",
+      "viewProducts": "منتجاتي",
+      "viewOrders": "مبيعاتي",
+      "loading": "جاري التحميل..."
     },
     "onboarding": {
       "comingSoon": "قريبا - نموذج KYC سيكون جاهزا في P12B"

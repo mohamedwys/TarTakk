@@ -349,7 +349,35 @@
     "dashboard": {
       "welcomeTitle": "Bienvenue {{name}} 👋",
       "welcomeSubtitle": "Voici un aperçu de votre activité",
-      "comingSoon": "Bientôt disponible — Cette section sera prête au Prompt 12C"
+      "comingSoon": "Bientôt disponible — Cette section sera prête au Prompt 12C",
+      "myStore": "Ma boutique : {{name}}",
+      "kpi": {
+        "salesThisMonth": "Ventes ce mois",
+        "pendingOrders": "Commandes en attente",
+        "activeProducts": "Produits actifs",
+        "revenueThisMonth": "CA ce mois"
+      },
+      "kpiSubtitle": {
+        "salesThisMonth": "{{count}} commandes payées",
+        "pendingOrders": "À expédier",
+        "activeProducts": "En vente",
+        "revenueThisMonth": "Hors taxes"
+      },
+      "recentOrders": "Dernières commandes",
+      "viewAllOrders": "Voir toutes",
+      "noRecentOrders": "Aucune commande récente",
+      "orderStatusBadge": {
+        "pending": "En attente",
+        "paid": "Payée",
+        "shipped": "Expédiée",
+        "delivered": "Livrée",
+        "cancelled": "Annulée"
+      },
+      "quickActions": "Actions rapides",
+      "createProduct": "Créer un produit",
+      "viewProducts": "Mes produits",
+      "viewOrders": "Mes ventes",
+      "loading": "Chargement..."
     },
     "onboarding": {
       "comingSoon": "Bientôt disponible — Le formulaire KYC sera prêt au Prompt 12B"

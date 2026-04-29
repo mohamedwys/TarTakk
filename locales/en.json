@@ -349,7 +349,35 @@
     "dashboard": {
       "welcomeTitle": "Welcome {{name}} 👋",
       "welcomeSubtitle": "Here's an overview of your activity",
-      "comingSoon": "Coming soon"
+      "comingSoon": "Coming soon",
+      "myStore": "My store: {{name}}",
+      "kpi": {
+        "salesThisMonth": "Sales this month",
+        "pendingOrders": "Pending orders",
+        "activeProducts": "Active products",
+        "revenueThisMonth": "Revenue this month"
+      },
+      "kpiSubtitle": {
+        "salesThisMonth": "{{count}} paid orders",
+        "pendingOrders": "To be shipped",
+        "activeProducts": "On sale",
+        "revenueThisMonth": "Excluding taxes"
+      },
+      "recentOrders": "Recent orders",
+      "viewAllOrders": "View all",
+      "noRecentOrders": "No recent orders",
+      "orderStatusBadge": {
+        "pending": "Pending",
+        "paid": "Paid",
+        "shipped": "Shipped",
+        "delivered": "Delivered",
+        "cancelled": "Cancelled"
+      },
+      "quickActions": "Quick Actions",
+      "createProduct": "Create product",
+      "viewProducts": "My products",
+      "viewOrders": "My sales",
+      "loading": "Loading..."
     },
     "onboarding": {
       "comingSoon": "Coming soon — KYC form will be ready in P12B"
