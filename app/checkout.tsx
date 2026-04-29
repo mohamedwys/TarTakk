@@ -83,7 +83,7 @@ export default function CheckoutScreen() {
       if (paymentMethod === 'cmi') {
         // Cart is cleared in payment/success.tsx after payment confirmation,
         // so the user can retry without re-filling the cart.
-        router.replace(`/payment/${orderId}`);
+        router.replace({ pathname: '/payment/[orderId]', params: { orderId } });
       } else {
         await clearCart();
         const orderRef = orderId.substring(0, 8).toUpperCase();

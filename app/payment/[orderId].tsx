@@ -70,14 +70,13 @@ export default function PaymentScreen() {
 
           if (result.success) {
             await markOrderAsPaid(orderId, result.transactionId!);
-            router.replace(`/payment/success?orderId=${orderId}`);
+            router.replace({ pathname: '/payment/success', params: { orderId } });
           } else {
             await markOrderAsFailed(orderId, result.errorMessage!);
-            router.replace(
-              `/payment/failure?orderId=${orderId}&reason=${encodeURIComponent(
-                result.errorMessage!
-              )}`
-            );
+            router.replace({
+              pathname: '/payment/failure',
+              params: { orderId, reason: result.errorMessage! },
+            });
           }
         } else {
           // Real CMI integration: render a WebView pointing at paymentUrl,
@@ -88,11 +87,10 @@ export default function PaymentScreen() {
       } catch (err: any) {
         console.error('[payment] flow error:', err);
         if (cancelled) return;
-        router.replace(
-          `/payment/failure?orderId=${orderId}&reason=${encodeURIComponent(
-            err?.message ?? 'Unknown error'
-          )}`
-        );
+        router.replace({
+          pathname: '/payment/failure',
+          params: { orderId, reason: err?.message ?? 'Unknown error' },
+        });
       }
     };
 
@@ -109,7 +107,7 @@ export default function PaymentScreen() {
       {
         text: t('common.yes'),
         style: 'destructive',
-        onPress: () => router.replace(`/orders/${orderId}`),
+        onPress: () => router.replace({ pathname: '/orders/[id]', params: { id: orderId } }),
       },
     ]);
   };

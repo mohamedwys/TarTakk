@@ -162,7 +162,7 @@ export default function OrdersListScreen() {
                 styles.orderCard,
                 { backgroundColor: config.theme.surface, borderColor: config.theme.border },
               ]}
-              onPress={() => router.push(`/orders/${item.id}`)}
+              onPress={() => router.push({ pathname: '/orders/[id]', params: { id: item.id } })}
             >
               <View style={styles.orderHeader}>
                 <Text style={[styles.orderRef, { color: config.theme.textPrimary }]}>

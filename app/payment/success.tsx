@@ -53,7 +53,7 @@ export default function PaymentSuccessScreen() {
       <View style={styles.footer}>
         <Pressable
           style={[styles.primaryButton, { backgroundColor: config.theme.primary }]}
-          onPress={() => router.replace(`/orders/${orderId}`)}
+          onPress={() => router.replace({ pathname: '/orders/[id]', params: { id: orderId } })}
         >
           <Text
             style={[styles.primaryButtonText, { color: config.theme.textInverse }]}

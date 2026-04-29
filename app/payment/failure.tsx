@@ -70,7 +70,7 @@ export default function PaymentFailureScreen() {
       <View style={styles.footer}>
         <Pressable
           style={[styles.primaryButton, { backgroundColor: config.theme.primary }]}
-          onPress={() => router.replace(`/payment/${orderId}`)}
+          onPress={() => router.replace({ pathname: '/payment/[orderId]', params: { orderId } })}
         >
           <Ionicons name="refresh" size={20} color={config.theme.textInverse} />
           <Text
@@ -82,7 +82,7 @@ export default function PaymentFailureScreen() {
 
         <Pressable
           style={styles.secondaryButton}
-          onPress={() => router.replace(`/orders/${orderId}`)}
+          onPress={() => router.replace({ pathname: '/orders/[id]', params: { id: orderId } })}
         >
           <Text
             style={[
