@@ -10,6 +10,12 @@ export function EnvProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // ⚡ Skip on SSR (no window/localStorage)
+    if (typeof window === 'undefined') {
+      setIsLoading(false);
+      return;
+    }
+
     let cancelled = false;
     (async () => {
       const stored = await loadStoredEnv();
