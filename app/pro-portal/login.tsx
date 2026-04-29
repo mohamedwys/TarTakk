@@ -38,11 +38,15 @@ export default function ProPortalLogin() {
           text1: t('proPortal.login.wrongCredentials'),
           text2: typeof result.error === 'string' ? result.error : undefined,
         });
+        setIsLoading(false);
         return;
       }
 
-      // Index route handles B2C/B2B/onboarding routing once the auth
-      // state has settled.
+      // Wait for AuthContext.user to be hydrated with the real accountType
+      // (enrichUserFromProfile runs async after hydrateFromSession), then
+      // route via /pro-portal index which decides dashboard vs onboarding.
+      await new Promise((resolve) => setTimeout(resolve, 250));
+
       router.replace({ pathname: '/pro-portal' } as any);
     } catch (err) {
       Toast.show({
