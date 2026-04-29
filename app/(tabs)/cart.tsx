@@ -70,7 +70,7 @@ export default function CartScreen() {
   };
 
   const handleCheckout = () => {
-    Alert.alert(t('product.comingSoon'), 'Checkout will be available in P10C');
+    router.push('/checkout');
   };
 
   const handleClearCart = () => {
