@@ -3,6 +3,7 @@ import { BadgePulse } from '@/components/BadgeBounce';
 import { useUnreadCount } from '@/contexts/UnreadCountContext';
 import { useCart } from '@/src/cart';
 import { EnvSwitcher } from '@/src/components/env/EnvSwitcher';
+import { CustomTabBar } from '@/src/components/tabs/CustomTabBar';
 import { useEnv } from '@/src/env';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs, useRouter, usePathname } from 'expo-router';
@@ -37,6 +38,7 @@ export default function TabLayout() {
         </SafeAreaView>
         <View style={{ flex: 1 }}>
       <Tabs
+        tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{
           tabBarActiveTintColor: config.theme.primary,
           tabBarInactiveTintColor: '#B2BEC3',
