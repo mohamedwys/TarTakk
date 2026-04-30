@@ -520,6 +520,55 @@
       "errorPriceRequired": "Price must be greater than 0",
       "errorConditionRequired": "Condition is required",
       "errorListingTypeRequired": "Listing type is required"
+    },
+    "sellerOrders": {
+      "title": "My Sales",
+      "subtitle": "{{count}} order(s) total",
+      "filter": {
+        "all": "All",
+        "toShip": "To ship",
+        "shipped": "Shipped",
+        "delivered": "Delivered",
+        "cancelled": "Cancelled"
+      },
+      "noOrders": "No sales",
+      "noOrdersSubtitle": "Your sales will appear here",
+      "items_one": "{{count}} item",
+      "items_other": "{{count}} items",
+      "orderRef": "Order #{{ref}}",
+      "buyerInfo": "Buyer",
+      "shippingInfo": "Shipping address",
+      "paymentInfo": "Payment",
+      "paymentMethod": {
+        "cmi": "Credit card (CMI)",
+        "cod": "Cash on delivery",
+        "bank_transfer": "Bank transfer"
+      },
+      "myItems": "My items",
+      "totals": "Totals",
+      "subtotal": "Subtotal",
+      "shipping": "Shipping",
+      "myRevenue": "My revenue",
+      "actions": "Actions",
+      "markAsShipped": "Mark as shipped",
+      "markAsDelivered": "Mark as delivered",
+      "contactBuyer": "Contact buyer",
+      "shippedSuccess": "Order marked as shipped",
+      "deliveredSuccess": "Order marked as delivered",
+      "actionFailed": "Action failed",
+      "confirmShip": "Confirm shipping for this order?",
+      "confirmDeliver": "Confirm delivery for this order?",
+      "loading": "Loading...",
+      "loadFailed": "Failed to load",
+      "notFound": "Order not found",
+      "back": "Back",
+      "status": {
+        "pending": "Pending",
+        "paid": "Paid",
+        "shipped": "Shipped",
+        "delivered": "Delivered",
+        "cancelled": "Cancelled"
+      }
     }
   }
 }
