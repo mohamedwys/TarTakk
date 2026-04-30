@@ -1,36 +1,68 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { useLocalSearchParams, Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useEnv } from '@/src/env';
 import { fetchOrderById, cancelOrder } from '@/lib/services/orderService';
 import { formatPrice } from '@/src/utils/currency';
+import { Button, Card, Divider } from '@/src/components/ui';
+import { SectionLabel } from '@/src/components/profile';
+import {
+  OrderTimeline,
+  OrderStatusBadge,
+  OrderItemRow,
+} from '@/src/components/orders';
+import { spacing } from '@/src/design/tokens';
+import { typography, fontFamily } from '@/src/design/typography';
 import Toast from 'react-native-toast-message';
 
-const STATUS_COLORS: Record<string, string> = {
-  pending: '#F59E0B',
-  paid: '#3B82F6',
-  shipped: '#8B5CF6',
-  delivered: '#10B981',
-  cancelled: '#EF4444',
-  refunded: '#6B7280',
-};
+type OrderStatus = 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
+
+function TotalsRow({
+  label,
+  value,
+  bold = false,
+}: {
+  label: string;
+  value: string;
+  bold?: boolean;
+}) {
+  const { config } = useEnv();
+  const theme = config.theme;
+  return (
+    <View style={styles.totalsRow}>
+      <Text
+        style={[
+          bold ? typography.body : typography.bodySmall,
+          {
+            color: bold ? theme.textPrimary : theme.textSecondary,
+            fontFamily: bold ? fontFamily.bold : fontFamily.regular,
+          },
+        ]}
+      >
+        {label}
+      </Text>
+      <Text
+        style={[
+          bold ? typography.h4 : typography.body,
+          {
+            color: bold ? theme.primary : theme.textPrimary,
+            fontFamily: bold ? fontFamily.extrabold : fontFamily.semibold,
+          },
+        ]}
+      >
+        {value}
+      </Text>
+    </View>
+  );
+}
 
 export default function OrderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t, i18n } = useTranslation();
   const { config } = useEnv();
-  const router = useRouter();
+  const theme = config.theme;
 
   const [order, setOrder] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -77,18 +109,18 @@ export default function OrderDetailScreen() {
 
   if (isLoading || !order) {
     return (
-      <View style={[styles.container, { backgroundColor: config.theme.background }]}>
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
         <Stack.Screen options={{ title: t('orders.orderRef'), headerShown: true }} />
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color={config.theme.primary} />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       </View>
     );
   }
 
   const orderRef = order.id.substring(0, 8).toUpperCase();
-  const statusColor = STATUS_COLORS[order.status] ?? config.theme.textSecondary;
-  const canCancel = order.status === 'pending' || order.status === 'paid';
+  const status = order.status as OrderStatus;
+  const canCancel = status === 'pending' || status === 'paid';
 
   const formatDate = (iso: string | null) => {
     if (!iso) return '—';
@@ -113,177 +145,144 @@ export default function OrderDetailScreen() {
           : '—';
 
   const addr = order.shipping_address ?? {};
+  const items = order.order_items ?? [];
 
   return (
-    <View style={[styles.container, { backgroundColor: config.theme.background }]}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <Stack.Screen options={{ title: `#${orderRef}`, headerShown: true }} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Status */}
-        <View
-          style={[
-            styles.section,
-            { backgroundColor: config.theme.surface, borderColor: config.theme.border },
-          ]}
-        >
-          <View style={[styles.statusBig, { backgroundColor: statusColor + '20' }]}>
-            <Ionicons name="receipt-outline" size={24} color={statusColor} />
-            <Text style={[styles.statusBigText, { color: statusColor }]}>
-              {t(`orders.status.${order.status}`)}
-            </Text>
-          </View>
-          <Text style={[styles.dateText, { color: config.theme.textSecondary }]}>
-            {formatDate(order.created_at)}
-          </Text>
-        </View>
-
-        {/* Items */}
-        <View
-          style={[
-            styles.section,
-            { backgroundColor: config.theme.surface, borderColor: config.theme.border },
-          ]}
-        >
-          <Text style={[styles.sectionTitle, { color: config.theme.textPrimary }]}>
-            {t('checkout.items')} ({order.order_items.length})
-          </Text>
-          {order.order_items.map((item: any) => (
-            <View key={item.id} style={styles.itemRow}>
-              {item.product_image ? (
-                <Image source={{ uri: item.product_image }} style={styles.itemImage} />
-              ) : (
-                <View style={[styles.itemImage, { backgroundColor: config.theme.border }]} />
-              )}
-              <View style={styles.itemInfo}>
-                <Text
-                  style={[styles.itemTitle, { color: config.theme.textPrimary }]}
-                  numberOfLines={2}
-                >
-                  {item.product_title}
-                </Text>
-                <Text style={[styles.itemMeta, { color: config.theme.textSecondary }]}>
-                  x{item.quantity} · {formatPrice(item.unit_price, order.currency)}
-                </Text>
-              </View>
-              <Text style={[styles.itemSubtotal, { color: config.theme.primary }]}>
-                {formatPrice(item.subtotal, order.currency)}
-              </Text>
-            </View>
-          ))}
-        </View>
-
-        {/* Address */}
-        <View
-          style={[
-            styles.section,
-            { backgroundColor: config.theme.surface, borderColor: config.theme.border },
-          ]}
-        >
-          <Text style={[styles.sectionTitle, { color: config.theme.textPrimary }]}>
-            {t('orders.shippingTo')}
-          </Text>
-          <Text style={[styles.addrLine, { color: config.theme.textPrimary }]}>{addr.name}</Text>
-          <Text style={[styles.addrLine, { color: config.theme.textSecondary }]}>
-            {addr.phone}
-          </Text>
-          <Text style={[styles.addrLine, { color: config.theme.textSecondary }]}>
-            {addr.address}
-          </Text>
-          <Text style={[styles.addrLine, { color: config.theme.textSecondary }]}>{addr.city}</Text>
-          {order.shipping_notes && (
+      <ScrollView contentContainerStyle={styles.scroll}>
+        {/* Status hero */}
+        <Card elevation="raised" padding="lg">
+          <View style={styles.heroInner}>
+            <OrderStatusBadge status={status} size="md" />
+            <OrderTimeline status={status} variant="full" />
             <Text
               style={[
-                styles.addrLine,
-                { color: config.theme.textSecondary, fontStyle: 'italic', marginTop: 8 },
+                typography.caption,
+                { color: theme.textTertiary, marginTop: spacing.xs },
+              ]}
+            >
+              {formatDate(order.created_at)}
+            </Text>
+          </View>
+        </Card>
+
+        {/* Items */}
+        <SectionLabel>{t('orders.detail.items')}</SectionLabel>
+        <Card elevation="raised" padding="md">
+          {items.map((item: any, idx: number) => (
+            <View key={item.id}>
+              <OrderItemRow item={item} currency={order.currency} />
+              {idx < items.length - 1 && <Divider variant="subtle" spacing="sm" />}
+            </View>
+          ))}
+        </Card>
+
+        {/* Shipping address */}
+        <SectionLabel>{t('orders.detail.shippingAddress')}</SectionLabel>
+        <Card elevation="raised" padding="md">
+          <Text
+            style={[
+              typography.body,
+              { color: theme.textPrimary, fontFamily: fontFamily.semibold },
+            ]}
+          >
+            {addr.name}
+          </Text>
+          {!!addr.phone && (
+            <Text
+              style={[typography.bodySmall, { color: theme.textSecondary, marginTop: 2 }]}
+            >
+              {addr.phone}
+            </Text>
+          )}
+          {!!addr.address && (
+            <Text
+              style={[typography.bodySmall, { color: theme.textSecondary, marginTop: 2 }]}
+            >
+              {addr.address}
+            </Text>
+          )}
+          {!!addr.city && (
+            <Text
+              style={[typography.bodySmall, { color: theme.textSecondary, marginTop: 2 }]}
+            >
+              {addr.city}
+            </Text>
+          )}
+          {!!order.shipping_notes && (
+            <Text
+              style={[
+                typography.bodySmall,
+                {
+                  color: theme.textTertiary,
+                  fontStyle: 'italic',
+                  marginTop: spacing.xs,
+                },
               ]}
             >
               {order.shipping_notes}
             </Text>
           )}
-        </View>
+        </Card>
 
-        {/* Payment */}
-        <View
-          style={[
-            styles.section,
-            { backgroundColor: config.theme.surface, borderColor: config.theme.border },
-          ]}
-        >
-          <Text style={[styles.sectionTitle, { color: config.theme.textPrimary }]}>
-            {t('orders.paymentMethod')}
-          </Text>
+        {/* Payment & totals */}
+        <SectionLabel>{t('orders.detail.payment')}</SectionLabel>
+        <Card elevation="raised" padding="md">
           <View style={styles.payRow}>
-            <Ionicons name="card-outline" size={20} color={config.theme.primary} />
-            <Text style={[styles.payText, { color: config.theme.textPrimary }]}>
+            <View style={styles.payMethodLeft}>
+              <Ionicons name="card-outline" size={20} color={theme.primary} />
+              <Text
+                style={[
+                  typography.bodySmall,
+                  { color: theme.textSecondary, marginLeft: spacing.xs },
+                ]}
+              >
+                {t('orders.detail.method')}
+              </Text>
+            </View>
+            <Text
+              style={[
+                typography.body,
+                { color: theme.textPrimary, fontFamily: fontFamily.semibold },
+              ]}
+            >
               {paymentLabel}
             </Text>
           </View>
-        </View>
+          <Divider variant="subtle" spacing="sm" />
+          <TotalsRow
+            label={t('orders.detail.subtotal')}
+            value={formatPrice(order.subtotal, order.currency)}
+          />
+          <TotalsRow
+            label={t('orders.detail.shipping')}
+            value={formatPrice(order.shipping_fee, order.currency)}
+          />
+          <Divider variant="strong" spacing="sm" />
+          <TotalsRow
+            label={t('orders.detail.total')}
+            value={formatPrice(order.total_amount, order.currency)}
+            bold
+          />
+        </Card>
 
-        {/* Totals */}
-        <View
-          style={[
-            styles.section,
-            { backgroundColor: config.theme.surface, borderColor: config.theme.border },
-          ]}
-        >
-          <View style={styles.totalsRow}>
-            <Text style={[styles.totalLabel, { color: config.theme.textSecondary }]}>
-              {t('orders.subtotal')}
-            </Text>
-            <Text style={[styles.totalValue, { color: config.theme.textPrimary }]}>
-              {formatPrice(order.subtotal, order.currency)}
-            </Text>
-          </View>
-          <View style={styles.totalsRow}>
-            <Text style={[styles.totalLabel, { color: config.theme.textSecondary }]}>
-              {t('orders.shipping')}
-            </Text>
-            <Text style={[styles.totalValue, { color: config.theme.textPrimary }]}>
-              {formatPrice(order.shipping_fee, order.currency)}
-            </Text>
-          </View>
-          <View
-            style={[
-              styles.totalsRow,
-              styles.grandTotalRow,
-              { borderTopColor: config.theme.border },
-            ]}
-          >
-            <Text style={[styles.grandTotalLabel, { color: config.theme.textPrimary }]}>
-              {t('orders.total')}
-            </Text>
-            <Text style={[styles.grandTotalValue, { color: config.theme.primary }]}>
-              {formatPrice(order.total_amount, order.currency)}
-            </Text>
-          </View>
-        </View>
-
-        {/* Cancel button */}
         {canCancel && (
-          <Pressable
-            style={[
-              styles.cancelButton,
-              { backgroundColor: config.theme.error + '15', borderColor: config.theme.error },
-              isCancelling && { opacity: 0.6 },
-            ]}
+          <Button
+            variant="danger"
+            size="lg"
+            fullWidth
+            iconLeft="close-circle-outline"
+            loading={isCancelling}
             onPress={handleCancel}
-            disabled={isCancelling}
+            style={{ marginTop: spacing.lg }}
           >
-            {isCancelling ? (
-              <ActivityIndicator color={config.theme.error} />
-            ) : (
-              <>
-                <Ionicons name="close-circle-outline" size={20} color={config.theme.error} />
-                <Text style={[styles.cancelButtonText, { color: config.theme.error }]}>
-                  {t('orders.cancelOrder')}
-                </Text>
-              </>
-            )}
-          </Pressable>
+            {t('orders.detail.cancelOrder')}
+          </Button>
         )}
 
-        <View style={{ height: 24 }} />
+        <View style={{ height: spacing.xl }} />
       </ScrollView>
     </View>
   );
@@ -292,53 +291,25 @@ export default function OrderDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  scrollContent: { padding: 16, gap: 12 },
-  section: {
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-    gap: 8,
-  },
-  sectionTitle: { fontSize: 15, fontWeight: '700', marginBottom: 8 },
-  statusBig: {
-    flexDirection: 'row',
+  scroll: { padding: spacing.md },
+  heroInner: {
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
-    alignSelf: 'flex-start',
+    gap: spacing.md,
   },
-  statusBigText: { fontSize: 14, fontWeight: '700' },
-  dateText: { fontSize: 12, marginTop: 4 },
-  itemRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 6 },
-  itemImage: { width: 56, height: 56, borderRadius: 8, backgroundColor: '#F0F0F0' },
-  itemInfo: { flex: 1 },
-  itemTitle: { fontSize: 13, fontWeight: '600' },
-  itemMeta: { fontSize: 12, marginTop: 2 },
-  itemSubtotal: { fontSize: 14, fontWeight: '700' },
-  addrLine: { fontSize: 13, lineHeight: 20 },
-  payRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 },
-  payText: { fontSize: 14 },
   totalsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 4,
   },
-  totalLabel: { fontSize: 13 },
-  totalValue: { fontSize: 14, fontWeight: '500' },
-  grandTotalRow: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 12, marginTop: 4 },
-  grandTotalLabel: { fontSize: 16, fontWeight: '700' },
-  grandTotalValue: { fontSize: 18, fontWeight: '800' },
-  cancelButton: {
+  payRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  payMethodLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 14,
-    borderRadius: 12,
-    borderWidth: 1,
   },
-  cancelButtonText: { fontSize: 15, fontWeight: '600' },
 });

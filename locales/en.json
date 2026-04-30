@@ -282,6 +282,8 @@
     "orderRef": "Order",
     "items_one": "{{count}} item",
     "items_other": "{{count}} items",
+    "itemsCount_one": "{{count}} item",
+    "itemsCount_other": "{{count}} items",
     "status": {
       "pending": "Pending",
       "paid": "Paid",
@@ -292,10 +294,30 @@
     },
     "timeline": {
       "ordered": "Order placed",
-      "paid": "Payment received",
+      "pending": "Placed",
+      "paid": "Paid",
       "shipped": "Shipped",
       "delivered": "Delivered",
       "cancelled": "Cancelled"
+    },
+    "filter": {
+      "all": "All",
+      "pending": "Pending",
+      "paid": "Paid",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    },
+    "detail": {
+      "items": "Items",
+      "shippingAddress": "Shipping address",
+      "payment": "Payment",
+      "cancelOrder": "Cancel order",
+      "contactSeller": "Contact seller",
+      "method": "Method",
+      "subtotal": "Subtotal",
+      "shipping": "Shipping",
+      "total": "Total"
     },
     "shippingTo": "Shipping to",
     "paymentMethod": "Payment method",

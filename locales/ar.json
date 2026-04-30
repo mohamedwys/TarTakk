@@ -282,6 +282,8 @@
     "orderRef": "طلب",
     "items_one": "{{count}} منتج",
     "items_other": "{{count}} منتجات",
+    "itemsCount_one": "{{count}} منتج",
+    "itemsCount_other": "{{count}} منتجات",
     "status": {
       "pending": "في الانتظار",
       "paid": "مدفوع",
@@ -292,10 +294,30 @@
     },
     "timeline": {
       "ordered": "تم تقديم الطلب",
-      "paid": "تم الدفع",
-      "shipped": "تم الشحن",
+      "pending": "تم الطلب",
+      "paid": "مدفوع",
+      "shipped": "مشحون",
       "delivered": "تم التسليم",
       "cancelled": "ملغى"
+    },
+    "filter": {
+      "all": "الكل",
+      "pending": "في الانتظار",
+      "paid": "مدفوع",
+      "shipped": "مشحون",
+      "delivered": "تم التسليم",
+      "cancelled": "ملغى"
+    },
+    "detail": {
+      "items": "المنتجات",
+      "shippingAddress": "عنوان التوصيل",
+      "payment": "الدفع",
+      "cancelOrder": "إلغاء الطلب",
+      "contactSeller": "التواصل مع البائع",
+      "method": "الطريقة",
+      "subtotal": "المجموع الفرعي",
+      "shipping": "التوصيل",
+      "total": "المجموع"
     },
     "shippingTo": "التوصيل إلى",
     "paymentMethod": "طريقة الدفع",

@@ -1,8 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   ActivityIndicator,
   FlatList,
-  Pressable,
   RefreshControl,
   StyleSheet,
   Text,
@@ -14,10 +13,15 @@ import { useTranslation } from 'react-i18next';
 import { useEnv } from '@/src/env';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchUserOrders } from '@/lib/services/orderService';
-import { formatPrice } from '@/src/utils/currency';
+import { Button } from '@/src/components/ui';
+import { FilterPills, OrderListCard } from '@/src/components/orders';
+import { spacing } from '@/src/design/tokens';
+import { typography, fontFamily } from '@/src/design/typography';
 import Toast from 'react-native-toast-message';
 
 type OrderStatus = 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
+
+type FilterKey = 'all' | OrderStatus;
 
 type OrderRow = {
   id: string;
@@ -33,26 +37,8 @@ type OrderRow = {
   }>;
 };
 
-const STATUS_COLORS: Record<OrderStatus, string> = {
-  pending: '#F59E0B',
-  paid: '#3B82F6',
-  shipped: '#8B5CF6',
-  delivered: '#10B981',
-  cancelled: '#EF4444',
-  refunded: '#6B7280',
-};
-
-const STATUS_ICONS: Record<OrderStatus, keyof typeof Ionicons.glyphMap> = {
-  pending: 'time-outline',
-  paid: 'card-outline',
-  shipped: 'cube-outline',
-  delivered: 'checkmark-circle-outline',
-  cancelled: 'close-circle-outline',
-  refunded: 'arrow-undo-outline',
-};
-
 export default function OrdersListScreen() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { config } = useEnv();
   const router = useRouter();
   const { user } = useAuth();
@@ -60,6 +46,7 @@ export default function OrdersListScreen() {
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<FilterKey>('all');
 
   const loadOrders = useCallback(async () => {
     if (!user?._id) {
@@ -83,7 +70,7 @@ export default function OrdersListScreen() {
   useFocusEffect(
     useCallback(() => {
       loadOrders();
-    }, [loadOrders])
+    }, [loadOrders]),
   );
 
   const handleRefresh = () => {
@@ -91,139 +78,95 @@ export default function OrdersListScreen() {
     loadOrders();
   };
 
-  const formatDate = (iso: string) => {
-    const locale =
-      i18n.language === 'fr' ? 'fr-MA' : i18n.language === 'ar' ? 'ar-MA' : 'en-MA';
-    return new Date(iso).toLocaleDateString(locale, {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
-  };
+  const filters = useMemo(
+    () =>
+      [
+        { key: 'all' as FilterKey, label: t('orders.filter.all') },
+        { key: 'pending' as FilterKey, label: t('orders.filter.pending') },
+        { key: 'paid' as FilterKey, label: t('orders.filter.paid') },
+        { key: 'shipped' as FilterKey, label: t('orders.filter.shipped') },
+        { key: 'delivered' as FilterKey, label: t('orders.filter.delivered') },
+        { key: 'cancelled' as FilterKey, label: t('orders.filter.cancelled') },
+      ],
+    [t],
+  );
 
-  if (isLoading) {
-    return (
-      <View style={[styles.container, { backgroundColor: config.theme.background }]}>
-        <Stack.Screen options={{ title: t('orders.title'), headerShown: true }} />
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={config.theme.primary} />
-        </View>
-      </View>
-    );
-  }
-
-  if (orders.length === 0) {
-    return (
-      <View style={[styles.container, { backgroundColor: config.theme.background }]}>
-        <Stack.Screen options={{ title: t('orders.title'), headerShown: true }} />
-        <View style={styles.centered}>
-          <Ionicons name="receipt-outline" size={80} color={config.theme.textSecondary} />
-          <Text style={[styles.emptyTitle, { color: config.theme.textPrimary }]}>
-            {t('orders.noOrders')}
-          </Text>
-          <Text style={[styles.emptySubtitle, { color: config.theme.textSecondary }]}>
-            {t('orders.noOrdersSubtitle')}
-          </Text>
-          <Pressable
-            style={[styles.startButton, { backgroundColor: config.theme.primary }]}
-            onPress={() => router.replace('/(tabs)')}
-          >
-            <Text style={[styles.startButtonText, { color: config.theme.textInverse }]}>
-              {t('orders.startShopping')}
-            </Text>
-          </Pressable>
-        </View>
-      </View>
-    );
-  }
+  const filteredOrders = useMemo(() => {
+    if (statusFilter === 'all') return orders;
+    return orders.filter((o) => o.status === statusFilter);
+  }, [orders, statusFilter]);
 
   return (
     <View style={[styles.container, { backgroundColor: config.theme.background }]}>
       <Stack.Screen options={{ title: t('orders.title'), headerShown: true }} />
-      <FlatList
-        data={orders}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={handleRefresh}
-            tintColor={config.theme.primary}
-          />
-        }
-        renderItem={({ item }) => {
-          const totalQty = item.order_items.reduce((sum, oi) => sum + oi.quantity, 0);
-          const orderRef = item.id.substring(0, 8).toUpperCase();
-          const statusColor = STATUS_COLORS[item.status];
 
-          return (
-            <Pressable
-              style={[
-                styles.orderCard,
-                { backgroundColor: config.theme.surface, borderColor: config.theme.border },
-              ]}
-              onPress={() => router.push({ pathname: '/orders/[id]', params: { id: item.id } })}
-            >
-              <View style={styles.orderHeader}>
-                <Text style={[styles.orderRef, { color: config.theme.textPrimary }]}>
-                  #{orderRef}
-                </Text>
-                <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
-                  <Ionicons name={STATUS_ICONS[item.status]} size={14} color={statusColor} />
-                  <Text style={[styles.statusText, { color: statusColor }]}>
-                    {t(`orders.status.${item.status}`)}
-                  </Text>
-                </View>
-              </View>
+      <FilterPills filters={filters} selected={statusFilter} onSelect={setStatusFilter} />
 
-              <Text style={[styles.orderItems, { color: config.theme.textSecondary }]}>
-                {t('orders.items', { count: totalQty })}  ·  {formatPrice(item.total_amount, item.currency)}
-              </Text>
-
-              <Text style={[styles.orderDate, { color: config.theme.textSecondary }]}>
-                {formatDate(item.created_at)}
-              </Text>
-
-              <View style={[styles.orderFooter, { borderTopColor: config.theme.border }]}>
-                <Text style={[styles.viewDetailsText, { color: config.theme.primary }]}>
-                  {t('orders.viewDetails')} →
-                </Text>
-              </View>
-            </Pressable>
-          );
-        }}
-      />
+      {isLoading && orders.length === 0 ? (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={config.theme.primary} />
+        </View>
+      ) : filteredOrders.length === 0 ? (
+        <View style={styles.centered}>
+          <Ionicons name="receipt-outline" size={80} color={config.theme.textSecondary} />
+          <Text
+            style={[
+              typography.h4,
+              {
+                color: config.theme.textPrimary,
+                marginTop: spacing.lg,
+                fontFamily: fontFamily.bold,
+              },
+            ]}
+          >
+            {t('orders.noOrders')}
+          </Text>
+          <Text
+            style={[
+              typography.bodySmall,
+              { color: config.theme.textSecondary, marginTop: spacing.xs, textAlign: 'center' },
+            ]}
+          >
+            {t('orders.noOrdersSubtitle')}
+          </Text>
+          <Button
+            variant="primary"
+            size="lg"
+            onPress={() => router.replace('/(tabs)')}
+            style={{ marginTop: spacing.xl }}
+          >
+            {t('orders.startShopping')}
+          </Button>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredOrders}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={config.theme.primary}
+            />
+          }
+          renderItem={({ item, index }) => <OrderListCard order={item} index={index} />}
+        />
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 },
-  emptyTitle: { fontSize: 22, fontWeight: '700', marginTop: 24 },
-  emptySubtitle: { fontSize: 14, textAlign: 'center', marginTop: 8 },
-  startButton: { marginTop: 32, paddingHorizontal: 32, paddingVertical: 14, borderRadius: 12 },
-  startButtonText: { fontSize: 15, fontWeight: '600' },
-  listContent: { padding: 16, gap: 12 },
-  orderCard: { padding: 16, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth },
-  orderHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    paddingHorizontal: spacing.xl,
   },
-  orderRef: { fontSize: 16, fontWeight: '700' },
-  statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+  listContent: {
+    padding: spacing.md,
+    gap: spacing.sm,
   },
-  statusText: { fontSize: 12, fontWeight: '600' },
-  orderItems: { fontSize: 14, marginBottom: 4 },
-  orderDate: { fontSize: 12, marginBottom: 8 },
-  orderFooter: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 8 },
-  viewDetailsText: { fontSize: 13, fontWeight: '600' },
 });

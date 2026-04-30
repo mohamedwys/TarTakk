@@ -282,6 +282,8 @@
     "orderRef": "Commande",
     "items_one": "{{count}} article",
     "items_other": "{{count}} articles",
+    "itemsCount_one": "{{count}} article",
+    "itemsCount_other": "{{count}} articles",
     "status": {
       "pending": "En attente",
       "paid": "Payée",
@@ -292,10 +294,30 @@
     },
     "timeline": {
       "ordered": "Commande passée",
-      "paid": "Paiement reçu",
+      "pending": "Passée",
+      "paid": "Payée",
       "shipped": "Expédiée",
       "delivered": "Livrée",
       "cancelled": "Annulée"
+    },
+    "filter": {
+      "all": "Toutes",
+      "pending": "En attente",
+      "paid": "Payée",
+      "shipped": "Expédiée",
+      "delivered": "Livrée",
+      "cancelled": "Annulée"
+    },
+    "detail": {
+      "items": "Articles",
+      "shippingAddress": "Adresse de livraison",
+      "payment": "Paiement",
+      "cancelOrder": "Annuler la commande",
+      "contactSeller": "Contacter le vendeur",
+      "method": "Méthode",
+      "subtotal": "Sous-total",
+      "shipping": "Livraison",
+      "total": "Total"
     },
     "shippingTo": "Livraison à",
     "paymentMethod": "Méthode de paiement",
