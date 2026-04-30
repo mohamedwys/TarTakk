@@ -1,4 +1,3 @@
-import AnimatedButton from "@/components/AnimatedButton";
 import { productsAPI, reviewsAPI, userAPI } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 import { useEnv } from "@/src/env";
@@ -14,22 +13,29 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { MotiView } from "moti";
 import Toast from "react-native-toast-message";
+import { Button, Card, Divider } from "@/src/components/ui";
+import { StatCard, MenuItem } from "@/src/components/profile";
+import { spacing, radius } from "@/src/design/tokens";
+import { typography, fontFamily } from "@/src/design/typography";
+import { animationConfig } from "@/src/design/animations";
+
+type TabKey = "listings" | "sold" | "reviews";
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { config } = useEnv();
   const { t } = useTranslation();
   const theme = config.theme;
-  const [activeTab, setActiveTab] = useState<"listings" | "sold" | "reviews">(
-    "listings"
-  );
+  const [activeTab, setActiveTab] = useState<TabKey>("listings");
 
   const [reviews, setReviews] = useState<any[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
@@ -41,11 +47,10 @@ export default function ProfileScreen() {
   const [listingsLoading, setListingsLoading] = useState(true);
   const [userError, setUserError] = useState<string | null>(null);
   const [listingsError, setListingsError] = useState<string | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isRefreshing] = useState(false);
 
   const fetchUserReviews = async () => {
     if (!user?.id) return;
-
     try {
       setReviewsError(null);
       setReviewsLoading(true);
@@ -111,9 +116,6 @@ export default function ProfileScreen() {
   const soldListings = listings.filter((item) => item.status === "sold");
 
   const uploadAvatarToCloudinary = async (uri: string): Promise<string> => {
-    // Name kept for backwards compatibility; uploads now go to the
-    // Supabase Storage `avatars` bucket. RLS limits writes to the
-    // current authenticated user.
     const fileExtension = (uri.split(".").pop() || "jpg").toLowerCase();
     const contentType = `image/${fileExtension === "jpg" ? "jpeg" : fileExtension}`;
 
@@ -149,8 +151,7 @@ export default function ProfileScreen() {
 
   const handleAvatarChange = async () => {
     try {
-      const { status } =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
         Toast.show({
           type: "error",
@@ -170,13 +171,9 @@ export default function ProfileScreen() {
       if (!result.canceled) {
         setUpdatingAvatar(true);
         const imageUri = result.assets[0].uri;
-
         const avatarUrl = await uploadAvatarToCloudinary(imageUri);
-
         await userAPI.updateProfile({ avatar: avatarUrl });
-
         setUser((prev: any) => ({ ...prev, avatar: avatarUrl }));
-
         Toast.show({
           type: "success",
           text1: "Success",
@@ -195,10 +192,10 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert(t('profile.logoutConfirmTitle'), t('profile.logoutConfirmMessage'), [
-      { text: t('common.cancel'), style: "cancel" },
+    Alert.alert(t("profile.logoutConfirmTitle"), t("profile.logoutConfirmMessage"), [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: t('profile.logout'),
+        text: t("profile.logout"),
         style: "destructive",
         onPress: async () => {
           try {
@@ -207,8 +204,8 @@ export default function ProfileScreen() {
           } catch (error) {
             Toast.show({
               type: "error",
-              text1: t('common.error'),
-              text2: t('profile.logoutFailed'),
+              text1: t("common.error"),
+              text2: t("profile.logoutFailed"),
             });
           }
         },
@@ -217,28 +214,41 @@ export default function ProfileScreen() {
   };
 
   const renderListingCard = (item: any) => (
-    <TouchableOpacity
+    <Card
       key={item.id}
-      style={[styles.listingCard, { backgroundColor: theme.surface }]}
+      elevation="raised"
+      padding="sm"
       onPress={() => router.push(`/product/${item.id}`)}
+      style={styles.listingCard}
     >
       <Image
         source={safeUri(item.images?.[0])}
         style={[styles.listingImage, { backgroundColor: theme.border }]}
       />
       <View style={styles.listingInfo}>
-        <Text style={[styles.listingTitle, { color: theme.textPrimary }]} numberOfLines={2}>
+        <Text
+          style={[typography.body, { color: theme.textPrimary, fontFamily: fontFamily.semibold }]}
+          numberOfLines={2}
+        >
           {item.title}
         </Text>
-        <Text style={[styles.listingPrice, { color: theme.textPrimary }]}>₦{item.price.toLocaleString()}</Text>
+        <Text
+          style={[typography.h4, { color: theme.textPrimary, fontFamily: fontFamily.extrabold }]}
+        >
+          ₦{item.price.toLocaleString()}
+        </Text>
         <View style={styles.listingMeta}>
-          <Ionicons name="eye-outline" size={14} color={theme.textSecondary} />
-          <Text style={[styles.listingViews, { color: theme.textSecondary }]}>{item.views || 0} {t('profile.views')}</Text>
+          <Ionicons name="eye-outline" size={14} color={theme.textTertiary} />
+          <Text style={[typography.caption, { color: theme.textTertiary }]}>
+            {item.views || 0} {t("profile.views")}
+          </Text>
         </View>
       </View>
       {item.status === "sold" && (
         <View style={[styles.soldBadge, { backgroundColor: theme.accent }]}>
-          <Text style={[styles.soldText, { color: theme.textInverse }]}>{t('profile.soldBadge')}</Text>
+          <Text style={[styles.soldText, { color: theme.textInverse }]}>
+            {t("profile.soldBadge")}
+          </Text>
         </View>
       )}
       <TouchableOpacity
@@ -247,14 +257,44 @@ export default function ProfileScreen() {
       >
         <Ionicons name="pencil" size={16} color={theme.textPrimary} />
       </TouchableOpacity>
-    </TouchableOpacity>
+    </Card>
   );
+
+  const renderTab = (key: TabKey, label: string, count: number) => {
+    const active = activeTab === key;
+    return (
+      <Pressable
+        key={key}
+        onPress={() => setActiveTab(key)}
+        style={[
+          styles.tabPill,
+          {
+            backgroundColor: active ? theme.primary : theme.surfaceMuted,
+          },
+        ]}
+      >
+        <Text
+          style={[
+            typography.buttonSmall,
+            {
+              color: active ? theme.textInverse : theme.textSecondary,
+              fontFamily: fontFamily.semibold,
+            },
+          ]}
+        >
+          {label} ({count})
+        </Text>
+      </Pressable>
+    );
+  };
 
   if (userLoading) {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
         <ActivityIndicator size="large" color={theme.primary} />
-        <Text style={[styles.loadingText, { color: theme.textSecondary }]}>{t('profile.loading')}</Text>
+        <Text style={[styles.loadingText, { color: theme.textSecondary }]}>
+          {t("profile.loading")}
+        </Text>
       </View>
     );
   }
@@ -264,315 +304,266 @@ export default function ProfileScreen() {
       <View style={[styles.errorContainer, { backgroundColor: theme.background }]}>
         <Ionicons name="cloud-offline-outline" size={48} color={theme.textSecondary} />
         <Text style={[styles.errorText, { color: theme.textSecondary }]}>{userError}</Text>
-        <TouchableOpacity style={[styles.retryButton, { backgroundColor: theme.primary }]} onPress={fetchUserProfile}>
-          <Text style={[styles.retryText, { color: theme.textInverse }]}>{t('common.retry')}</Text>
-        </TouchableOpacity>
+        <Button onPress={fetchUserProfile}>{t("common.retry")}</Button>
       </View>
     );
   }
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      {/* Header */}
       <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
-        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>{t('profile.title')}</Text>
+        <Text style={[typography.h2, { color: theme.textPrimary, fontFamily: fontFamily.extrabold }]}>
+          {t("profile.title")}
+        </Text>
         <TouchableOpacity
-          style={[styles.settingsButton, { backgroundColor: theme.background }]}
+          style={[styles.settingsButton, { backgroundColor: theme.surfaceMuted }]}
           onPress={() => router.push("/settings")}
         >
-          <Ionicons name="settings-outline" size={24} color={theme.textPrimary} />
+          <Ionicons name="settings-outline" size={22} color={theme.textPrimary} />
         </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Profile Section */}
         {!user ? (
           <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
             <ActivityIndicator size="large" color={theme.primary} />
-            <Text style={[styles.loadingText, { color: theme.textSecondary }]}>{t('profile.loading')}</Text>
+            <Text style={[styles.loadingText, { color: theme.textSecondary }]}>
+              {t("profile.loading")}
+            </Text>
           </View>
         ) : (
           <>
-            <View style={[styles.profileSection, { backgroundColor: theme.surface }]}>
+            <MotiView
+              from={{ opacity: 0, translateY: 8 }}
+              animate={{ opacity: 1, translateY: 0 }}
+              transition={animationConfig.enter}
+              style={styles.heroSection}
+            >
               <View style={styles.avatarContainer}>
-                <TouchableOpacity
-                  onPress={handleAvatarChange}
-                  disabled={updatingAvatar}
-                >
+                <TouchableOpacity onPress={handleAvatarChange} disabled={updatingAvatar}>
                   <Image
                     source={safeUri(user.avatar)}
                     style={[
                       styles.avatar,
-                      { backgroundColor: theme.background },
-                      !user.avatar && styles.avatarPlaceholder,
+                      { backgroundColor: theme.surfaceMuted, borderColor: theme.surface },
                     ]}
                   />
                   {!user.avatar && (
                     <View style={styles.avatarPlaceholderContent}>
-                      <Ionicons name="person" size={40} color={theme.textSecondary} />
+                      <Ionicons name="person" size={42} color={theme.textTertiary} />
                     </View>
                   )}
-                  <View style={[styles.editAvatarButton, { backgroundColor: theme.primary, borderColor: theme.surface }]}>
-                    <Ionicons name="camera" size={16} color={theme.textInverse} />
+                  <View
+                    style={[
+                      styles.editAvatarButton,
+                      { backgroundColor: theme.primary, borderColor: theme.surface },
+                    ]}
+                  >
+                    <Ionicons name="camera" size={14} color={theme.textInverse} />
                   </View>
                 </TouchableOpacity>
                 {user.verified && (
                   <View style={[styles.verifiedBadge, { backgroundColor: theme.surface }]}>
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={24}
-                      color={theme.primary}
-                    />
+                    <Ionicons name="checkmark-circle" size={22} color={theme.primary} />
                   </View>
                 )}
                 {updatingAvatar && (
                   <View style={styles.avatarLoading}>
-                    <Ionicons name="refresh" size={24} color={theme.primary} />
+                    <ActivityIndicator size="small" color={theme.primary} />
                   </View>
                 )}
               </View>
-              <Text style={[styles.userName, { color: theme.textPrimary }]}>{user.name}</Text>
-              <Text style={[styles.userEmail, { color: theme.textSecondary }]}>{user.email}</Text>
 
-              {user.bio && <Text style={[styles.userBio, { color: theme.textSecondary }]}>{user.bio}</Text>}
+              <Text
+                style={[
+                  typography.h2,
+                  { color: theme.textPrimary, fontFamily: fontFamily.extrabold, marginTop: spacing.md },
+                ]}
+              >
+                {user.name}
+              </Text>
+              <Text style={[typography.bodySmall, { color: theme.textSecondary, marginTop: 2 }]}>
+                {user.email}
+              </Text>
+              {user.location && (
+                <View style={styles.locationRow}>
+                  <Ionicons name="location-outline" size={14} color={theme.textTertiary} />
+                  <Text style={[typography.caption, { color: theme.textTertiary }]}>
+                    {user.location}
+                  </Text>
+                </View>
+              )}
 
-              {/* Stats */}
-              <View style={styles.statsContainer}>
-                <View style={styles.statItem}>
-                  <Text style={[styles.statValue, { color: theme.textPrimary }]}>{user.rating || 0}</Text>
-                  <View style={styles.statLabelRow}>
-                    <Ionicons name="star" size={14} color="#FFB84D" />
-                    <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{t('profile.rating')}</Text>
-                  </View>
-                </View>
-                <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
-                <View style={styles.statItem}>
-                  <Text style={[styles.statValue, { color: theme.textPrimary }]}>{user.totalReviews || 0}</Text>
-                  <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{t('profile.reviews')}</Text>
-                </View>
-                <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
-                <View style={styles.statItem}>
-                  <Text style={[styles.statValue, { color: theme.textPrimary }]}>{user.totalSales || 0}</Text>
-                  <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{t('profile.sales')}</Text>
-                </View>
-              </View>
+              {user.bio && (
+                <Text
+                  style={[
+                    typography.body,
+                    {
+                      color: theme.textSecondary,
+                      textAlign: "center",
+                      marginTop: spacing.sm,
+                      paddingHorizontal: spacing.md,
+                    },
+                  ]}
+                >
+                  {user.bio}
+                </Text>
+              )}
+            </MotiView>
 
-              <AnimatedButton
-                title={t('profile.editProfile')}
-                icon="create-outline"
-                variant="secondary"
-                onPress={() => router.push("/profile/edit")}
+            <View style={styles.statsRow}>
+              <StatCard
+                icon="star"
+                value={user.rating ?? 0}
+                label={t("profile.rating")}
+                iconColor="#FFB84D"
+              />
+              <StatCard
+                icon="chatbubble-ellipses"
+                value={user.totalReviews ?? 0}
+                label={t("profile.reviews")}
+              />
+              <StatCard
+                icon="cube"
+                value={user.totalSales ?? 0}
+                label={t("profile.sales")}
               />
             </View>
 
-            {/* Quick Info */}
-            <View style={[styles.infoSection, { backgroundColor: theme.surface }]}>
-              <View style={styles.infoItem}>
-                <View style={[styles.infoIcon, { backgroundColor: theme.background }]}>
-                  <Ionicons name="location-outline" size={20} color={theme.primary} />
-                </View>
-                <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>{t('profile.location')}</Text>
-                  <Text style={[styles.infoValue, { color: theme.textPrimary }]}>
-                    {user.location || t('profile.notSet')}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.infoItem}>
-                <View style={[styles.infoIcon, { backgroundColor: theme.background }]}>
-                  <Ionicons name="call-outline" size={20} color={theme.primary} />
-                </View>
-                <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>{t('profile.phone')}</Text>
-                  <Text style={[styles.infoValue, { color: theme.textPrimary }]}>
-                    {user.phoneNumber || t('profile.notSet')}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.infoItem}>
-                <View style={[styles.infoIcon, { backgroundColor: theme.background }]}>
-                  <Ionicons name="calendar-outline" size={20} color={theme.primary} />
-                </View>
-                <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>{t('profile.memberSince')}</Text>
-                  <Text style={[styles.infoValue, { color: theme.textPrimary }]}>
-                    {user.createdAt
-                      ? new Date(user.createdAt).toLocaleDateString("en-US", {
-                          month: "short",
-                          year: "numeric",
-                        })
-                      : t('common.unknown')}
-                  </Text>
-                </View>
-              </View>
+            <View style={styles.editButtonRow}>
+              <Button
+                variant="secondary"
+                fullWidth
+                iconLeft="create-outline"
+                onPress={() => router.push("/profile/edit")}
+              >
+                {t("profile.editProfile")}
+              </Button>
             </View>
 
-            <View style={[styles.listingsSection, { backgroundColor: theme.surface }]}>
-              <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>{t('profile.myListings')}</Text>
+            <View style={styles.listingsBlock}>
+              <Text
+                style={[
+                  typography.h3,
+                  { color: theme.textPrimary, fontFamily: fontFamily.bold, paddingHorizontal: spacing.md },
+                ]}
+              >
+                {t("profile.myListings")}
+              </Text>
 
-              {/* Tabs */}
-              <View style={[styles.tabs, { borderBottomColor: theme.border }]}>
-                <TouchableOpacity
-                  style={[
-                    styles.tab,
-                    activeTab === "listings" && { borderBottomWidth: 2, borderBottomColor: theme.primary },
-                  ]}
-                  onPress={() => setActiveTab("listings")}
-                >
-                  <Text
-                    style={[
-                      styles.tabText,
-                      { color: theme.textSecondary },
-                      activeTab === "listings" && { color: theme.primary },
-                    ]}
-                  >
-                    {t('profile.active')} ({activeListings.length})
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.tab,
-                    activeTab === "sold" && { borderBottomWidth: 2, borderBottomColor: theme.primary },
-                  ]}
-                  onPress={() => setActiveTab("sold")}
-                >
-                  <Text
-                    style={[
-                      styles.tabText,
-                      { color: theme.textSecondary },
-                      activeTab === "sold" && { color: theme.primary },
-                    ]}
-                  >
-                    {t('profile.sold')} ({soldListings.length})
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.tab,
-                    activeTab === "reviews" && { borderBottomWidth: 2, borderBottomColor: theme.primary },
-                  ]}
-                  onPress={() => setActiveTab("reviews")}
-                >
-                  <Text
-                    style={[
-                      styles.tabText,
-                      { color: theme.textSecondary },
-                      activeTab === "reviews" && { color: theme.primary },
-                    ]}
-                  >
-                    {t('profile.reviews')} ({reviews.length})
-                  </Text>
-                </TouchableOpacity>
+              <View style={styles.tabsRow}>
+                {renderTab("listings", t("profile.active"), activeListings.length)}
+                {renderTab("sold", t("profile.sold"), soldListings.length)}
+                {renderTab("reviews", t("profile.reviews"), reviews.length)}
               </View>
 
-              {/* Listings Grid */}
               {activeTab === "reviews" ? (
                 reviewsLoading ? (
-                  <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+                  <View style={styles.inlineLoading}>
                     <ActivityIndicator size="large" color={theme.primary} />
-                    <Text style={[styles.loadingText, { color: theme.textSecondary }]}>{t('profile.loadingReviews')}</Text>
+                    <Text style={[typography.bodySmall, { color: theme.textSecondary, marginTop: spacing.sm }]}>
+                      {t("profile.loadingReviews")}
+                    </Text>
                   </View>
                 ) : reviewsError ? (
-                  <View style={[styles.errorContainer, { backgroundColor: theme.background }]}>
-                    <Ionicons
-                      name="cloud-offline-outline"
-                      size={48}
-                      color={theme.textSecondary}
-                    />
-                    <Text style={[styles.errorText, { color: theme.textSecondary }]}>{reviewsError}</Text>
-                    <TouchableOpacity
-                      style={[styles.retryButton, { backgroundColor: theme.primary }]}
-                      onPress={fetchUserReviews}
-                    >
-                      <Text style={[styles.retryText, { color: theme.textInverse }]}>{t('common.retry')}</Text>
-                    </TouchableOpacity>
+                  <View style={styles.inlineError}>
+                    <Ionicons name="cloud-offline-outline" size={48} color={theme.textTertiary} />
+                    <Text style={[typography.body, { color: theme.textSecondary, marginVertical: spacing.sm }]}>
+                      {reviewsError}
+                    </Text>
+                    <Button onPress={fetchUserReviews}>{t("common.retry")}</Button>
                   </View>
                 ) : reviews.length > 0 ? (
                   <View style={styles.reviewsList}>
                     {reviews.map((review) => (
-                      <View key={review.id} style={[styles.reviewCard, { backgroundColor: theme.background }]}>
+                      <Card
+                        key={review.id}
+                        elevation="flat"
+                        padding="md"
+                        style={{ marginBottom: spacing.sm }}
+                      >
                         <View style={styles.reviewHeader}>
                           <Image
                             source={safeUri(review.reviewer?.avatar)}
                             style={styles.reviewerAvatar}
                           />
                           <View style={styles.reviewInfo}>
-                            <Text style={[styles.reviewerName, { color: theme.textPrimary }]}>
+                            <Text
+                              style={[
+                                typography.bodySmall,
+                                { color: theme.textPrimary, fontFamily: fontFamily.semibold },
+                              ]}
+                            >
                               {review.reviewer.name}
                             </Text>
                             <View style={styles.ratingContainer}>
                               {[...Array(5)].map((_, i) => (
                                 <Ionicons
                                   key={i}
-                                  name={
-                                    i < review.rating ? "star" : "star-outline"
-                                  }
-                                  size={14}
-                                  color="#FFD700"
+                                  name={i < review.rating ? "star" : "star-outline"}
+                                  size={13}
+                                  color="#FFB84D"
                                 />
                               ))}
                             </View>
                           </View>
-                          <Text style={[styles.reviewDate, { color: theme.textSecondary }]}>
+                          <Text style={[typography.caption, { color: theme.textTertiary }]}>
                             {new Date(review.createdAt).toLocaleDateString()}
                           </Text>
                         </View>
-                        <Text style={[styles.reviewComment, { color: theme.textSecondary }]}>
+                        <Text
+                          style={[
+                            typography.bodySmall,
+                            { color: theme.textSecondary, marginTop: spacing.xs },
+                          ]}
+                        >
                           {review.comment}
                         </Text>
                         <TouchableOpacity
-                          style={styles.productLink}
-                          onPress={() =>
-                            router.push(`/product/${review.product.id}`)
-                          }
+                          style={{ marginTop: spacing.xs }}
+                          onPress={() => router.push(`/product/${review.product.id}`)}
                         >
-                          <Text style={[styles.productLinkText, { color: theme.primary }]}>
-                            {t('profile.aboutProduct', { title: review.product.title })}
+                          <Text
+                            style={[
+                              typography.caption,
+                              { color: theme.primary, fontFamily: fontFamily.semibold },
+                            ]}
+                          >
+                            {t("profile.aboutProduct", { title: review.product.title })}
                           </Text>
                         </TouchableOpacity>
-                      </View>
+                      </Card>
                     ))}
                   </View>
                 ) : (
                   <View style={styles.emptyState}>
-                    <Ionicons
-                      name="chatbubble-outline"
-                      size={64}
-                      color={theme.textSecondary}
-                    />
-                    <Text style={[styles.emptyText, { color: theme.textSecondary }]}>{t('profile.noReviews')}</Text>
-                    <Text style={[styles.emptySubtext, { color: theme.textSecondary }]}>
-                      {t('profile.reviewsWillAppear')}
+                    <Ionicons name="chatbubble-outline" size={56} color={theme.textTertiary} />
+                    <Text style={[typography.body, { color: theme.textSecondary, marginTop: spacing.sm }]}>
+                      {t("profile.noReviews")}
+                    </Text>
+                    <Text style={[typography.caption, { color: theme.textTertiary, marginTop: 4 }]}>
+                      {t("profile.reviewsWillAppear")}
                     </Text>
                   </View>
                 )
               ) : listingsLoading ? (
-                <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+                <View style={styles.inlineLoading}>
                   <ActivityIndicator size="large" color={theme.primary} />
-                  <Text style={[styles.loadingText, { color: theme.textSecondary }]}>{t('profile.loadingListings')}</Text>
+                  <Text style={[typography.bodySmall, { color: theme.textSecondary, marginTop: spacing.sm }]}>
+                    {t("profile.loadingListings")}
+                  </Text>
                 </View>
               ) : listingsError ? (
-                <View style={[styles.errorContainer, { backgroundColor: theme.background }]}>
-                  <Ionicons
-                    name="cloud-offline-outline"
-                    size={48}
-                    color={theme.textSecondary}
-                  />
-                  <Text style={[styles.errorText, { color: theme.textSecondary }]}>{listingsError}</Text>
-                  <TouchableOpacity
-                    style={[styles.retryButton, { backgroundColor: theme.primary }]}
-                    onPress={fetchUserListings}
-                  >
-                    <Text style={[styles.retryText, { color: theme.textInverse }]}>{t('common.retry')}</Text>
-                  </TouchableOpacity>
+                <View style={styles.inlineError}>
+                  <Ionicons name="cloud-offline-outline" size={48} color={theme.textTertiary} />
+                  <Text style={[typography.body, { color: theme.textSecondary, marginVertical: spacing.sm }]}>
+                    {listingsError}
+                  </Text>
+                  <Button onPress={fetchUserListings}>{t("common.retry")}</Button>
                 </View>
               ) : (
-                <View style={styles.listingsGrid}>
-                  {activeTab === "listings"
-                    ? activeListings.map(renderListingCard)
-                    : soldListings.map(renderListingCard)}
+                <View style={styles.listingsList}>
+                  {(activeTab === "listings" ? activeListings : soldListings).map(renderListingCard)}
                 </View>
               )}
 
@@ -582,89 +573,69 @@ export default function ProfileScreen() {
                 ((activeTab === "listings" && activeListings.length === 0) ||
                   (activeTab === "sold" && soldListings.length === 0)) && (
                   <View style={styles.emptyState}>
-                    <Ionicons name="cube-outline" size={64} color={theme.textSecondary} />
-                    <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
+                    <Ionicons name="cube-outline" size={56} color={theme.textTertiary} />
+                    <Text
+                      style={[
+                        typography.body,
+                        { color: theme.textSecondary, marginTop: spacing.sm, marginBottom: spacing.md },
+                      ]}
+                    >
                       {activeTab === "listings"
-                        ? t('profile.noActiveListings')
-                        : t('profile.noSoldItems')}
+                        ? t("profile.noActiveListings")
+                        : t("profile.noSoldItems")}
                     </Text>
                     {activeTab === "listings" && (
-                      <AnimatedButton
-                        title={t('profile.createListing')}
-                        icon="add-circle"
+                      <Button
+                        iconLeft="add-circle"
+                        size="lg"
                         onPress={() => router.push("/(tabs)/create")}
-                        size="large"
-                      />
+                      >
+                        {t("profile.createListing")}
+                      </Button>
                     )}
                   </View>
                 )}
             </View>
 
-            {/* Actions Section */}
-            <View style={[styles.actionsSection, { backgroundColor: theme.surface }]}>
-              <TouchableOpacity
-                style={styles.actionItem}
+            <Divider />
+
+            <View style={styles.menuSection}>
+              <MenuItem
+                icon="receipt-outline"
+                iconColor={theme.primary}
+                label={t("orders.myOrders")}
                 onPress={() => router.push("/orders")}
-              >
-                <View style={styles.actionLeft}>
-                  <Ionicons name="receipt-outline" size={24} color={theme.primary} />
-                  <Text style={[styles.actionText, { color: theme.textPrimary }]}>{t('orders.myOrders')}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.actionItem}
+              />
+              <MenuItem
+                icon="heart-outline"
+                iconColor={theme.accent}
+                label={t("profile.favorites")}
                 onPress={() => router.push("/favorites")}
-              >
-                <View style={styles.actionLeft}>
-                  <Ionicons name="heart-outline" size={24} color={theme.accent} />
-                  <Text style={[styles.actionText, { color: theme.textPrimary }]}>{t('profile.favorites')}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.actionItem}
+              />
+              <MenuItem
+                icon="settings-outline"
+                iconColor={theme.textSecondary}
+                label={t("profile.settings")}
                 onPress={() => router.push("/settings")}
-              >
-                <View style={styles.actionLeft}>
-                  <Ionicons name="settings-outline" size={24} color={theme.textSecondary} />
-                  <Text style={[styles.actionText, { color: theme.textPrimary }]}>{t('profile.settings')}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.actionItem}
+              />
+              <MenuItem
+                icon="help-circle-outline"
+                iconColor={theme.textSecondary}
+                label={t("profile.helpSupport")}
                 onPress={() => router.push("/help")}
-              >
-                <View style={styles.actionLeft}>
-                  <Ionicons
-                    name="help-circle-outline"
-                    size={24}
-                    color={theme.textSecondary}
-                  />
-                  <Text style={[styles.actionText, { color: theme.textPrimary }]}>{t('profile.helpSupport')}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.actionItem}
-                onPress={handleLogout}
-              >
-                <View style={styles.actionLeft}>
-                  <Ionicons name="log-out-outline" size={24} color={theme.error} />
-                  <Text style={[styles.actionText, { color: theme.error }]}>
-                    {t('profile.logout')}
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
-              </TouchableOpacity>
+              />
             </View>
 
-            {/* Bottom Spacing */}
+            <View style={styles.logoutSection}>
+              <MenuItem
+                icon="log-out-outline"
+                label={t("profile.logout")}
+                variant="danger"
+                showChevron={false}
+                onPress={handleLogout}
+              />
+            </View>
+
             <View style={styles.bottomSpacing} />
           </>
         )}
@@ -674,275 +645,36 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.md,
     paddingTop: 60,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
+    paddingBottom: spacing.sm,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   settingsButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: radius.full,
     justifyContent: "center",
     alignItems: "center",
   },
-  content: {
-    flex: 1,
-  },
-  profileSection: {
+  content: { flex: 1 },
+  heroSection: {
     alignItems: "center",
-    paddingVertical: 32,
-    paddingHorizontal: 20,
-    marginBottom: 8,
+    paddingTop: spacing.lg,
+    paddingHorizontal: spacing.md,
   },
-  avatarContainer: {
-    position: "relative",
-    marginBottom: 16,
-  },
+  avatarContainer: { position: "relative" },
   avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    borderWidth: 3,
   },
-  verifiedBadge: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    borderRadius: 12,
-  },
-  userName: {
-    fontSize: 24,
-    fontWeight: "700",
-    marginBottom: 4,
-  },
-  userEmail: {
-    fontSize: 14,
-    marginBottom: 12,
-  },
-  userBio: {
-    fontSize: 15,
-    textAlign: "center",
-    lineHeight: 22,
-    marginBottom: 24,
-  },
-  statsContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  statItem: {
-    alignItems: "center",
-    paddingHorizontal: 24,
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: "700",
-    marginBottom: 4,
-  },
-  statLabelRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  statLabel: {
-    fontSize: 13,
-  },
-  statDivider: {
-    width: 1,
-    height: 40,
-  },
-  infoSection: {
-    paddingVertical: 12,
-    marginBottom: 8,
-  },
-  infoItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    gap: 16,
-  },
-  infoIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  infoContent: {
-    flex: 1,
-  },
-  infoLabel: {
-    fontSize: 13,
-    marginBottom: 2,
-  },
-  infoValue: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  listingsSection: {
-    paddingTop: 20,
-    marginBottom: 8,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    paddingHorizontal: 20,
-    marginBottom: 16,
-  },
-  tabs: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    marginBottom: 16,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-  tabText: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  listingsGrid: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  listingCard: {
-    flexDirection: "row",
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
-    position: "relative",
-  },
-  listingImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    marginRight: 12,
-  },
-  listingInfo: {
-    flex: 1,
-    justifyContent: "space-between",
-  },
-  listingTitle: {
-    fontSize: 15,
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-  listingPrice: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 4,
-  },
-  listingMeta: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  listingViews: {
-    fontSize: 13,
-  },
-  soldBadge: {
-    position: "absolute",
-    top: 12,
-    left: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  soldText: {
-    fontSize: 11,
-    fontWeight: "700",
-  },
-  editButton: {
-    position: "absolute",
-    top: 12,
-    right: 12,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  emptyState: {
-    alignItems: "center",
-    paddingVertical: 40,
-  },
-  emptyText: {
-    fontSize: 16,
-    marginTop: 16,
-    marginBottom: 24,
-  },
-  actionsSection: {
-    paddingVertical: 8,
-    marginBottom: 8,
-  },
-  actionItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  actionLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-  },
-  actionText: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  bottomSpacing: {
-    height: 40,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    fontSize: 16,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 40,
-  },
-  errorText: {
-    fontSize: 16,
-    textAlign: "center",
-    marginTop: 12,
-    marginBottom: 20,
-  },
-  retryButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-  retryText: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  avatarPlaceholder: {},
   avatarPlaceholderContent: {
     position: "absolute",
     top: 0,
@@ -956,12 +688,18 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     right: 0,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 3,
+    borderWidth: 2.5,
+  },
+  verifiedBadge: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    borderRadius: 12,
   },
   avatarLoading: {
     position: "absolute",
@@ -969,60 +707,156 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 50,
+    borderRadius: 48,
+  },
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: spacing.xs,
+  },
+  statsRow: {
+    flexDirection: "row",
+    paddingHorizontal: spacing.md,
+    marginTop: spacing.lg,
+    gap: spacing.sm,
+  },
+  editButtonRow: {
+    paddingHorizontal: spacing.md,
+    marginTop: spacing.md,
+  },
+  listingsBlock: {
+    marginTop: spacing.xl,
+  },
+  tabsRow: {
+    flexDirection: "row",
+    gap: spacing.xs,
+    paddingHorizontal: spacing.md,
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
+  },
+  tabPill: {
+    flex: 1,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radius.full,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 36,
+  },
+  listingsList: {
+    paddingHorizontal: spacing.md,
+    gap: spacing.sm,
+  },
+  listingCard: {
+    flexDirection: "row",
+    position: "relative",
+    gap: spacing.sm,
+  },
+  listingImage: {
+    width: 76,
+    height: 76,
+    borderRadius: radius.md,
+  },
+  listingInfo: {
+    flex: 1,
+    justifyContent: "space-between",
+    paddingRight: 40,
+  },
+  listingMeta: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  soldBadge: {
+    position: "absolute",
+    top: spacing.sm,
+    left: spacing.sm,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: radius.xs,
+  },
+  soldText: {
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.5,
+  },
+  editButton: {
+    position: "absolute",
+    top: spacing.sm,
+    right: spacing.sm,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
   reviewsList: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  reviewCard: {
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
+    paddingHorizontal: spacing.md,
   },
   reviewHeader: {
     flexDirection: "row",
     alignItems: "flex-start",
-    marginBottom: 8,
+    gap: spacing.sm,
   },
   reviewerAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
   },
-  reviewInfo: {
-    flex: 1,
-  },
-  reviewerName: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 4,
-  },
+  reviewInfo: { flex: 1 },
   ratingContainer: {
     flexDirection: "row",
+    marginTop: 2,
   },
-  reviewDate: {
-    fontSize: 12,
+  emptyState: {
+    alignItems: "center",
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.md,
   },
-  reviewComment: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 8,
+  inlineLoading: {
+    paddingVertical: spacing.xl,
+    alignItems: "center",
   },
-  productLink: {
-    alignSelf: "flex-start",
+  inlineError: {
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.md,
+    alignItems: "center",
   },
-  productLinkText: {
-    fontSize: 13,
-    fontWeight: "600",
+  menuSection: {
+    marginTop: spacing.sm,
   },
-  emptySubtext: {
-    fontSize: 14,
+  logoutSection: {
+    marginTop: spacing.md,
+  },
+  bottomSpacing: { height: 60 },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: spacing.xxl,
+  },
+  loadingText: {
+    fontSize: 15,
+    marginTop: spacing.sm,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: spacing.xl,
+    gap: spacing.md,
+  },
+  errorText: {
+    fontSize: 15,
     textAlign: "center",
-    marginTop: 8,
   },
 });
