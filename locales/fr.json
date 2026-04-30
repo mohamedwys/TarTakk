@@ -36,6 +36,14 @@
     "noProducts": "Aucun produit disponible",
     "checkBackLater": "Revenez plus tard pour de nouvelles annonces"
   },
+  "categories": {
+    "electronics": "Électronique",
+    "fashion": "Mode",
+    "home": "Maison",
+    "sports": "Sport",
+    "books": "Livres",
+    "toys": "Jouets"
+  },
   "auth": {
     "login": "Se connecter",
     "register": "S'inscrire",

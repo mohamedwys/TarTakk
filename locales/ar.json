@@ -36,6 +36,14 @@
     "noProducts": "لا توجد منتجات متاحة",
     "checkBackLater": "تحقق لاحقا للعثور على إعلانات جديدة"
   },
+  "categories": {
+    "electronics": "إلكترونيات",
+    "fashion": "أزياء",
+    "home": "منزل",
+    "sports": "رياضة",
+    "books": "كتب",
+    "toys": "ألعاب"
+  },
   "auth": {
     "login": "تسجيل الدخول",
     "register": "إنشاء حساب",

@@ -36,6 +36,14 @@
     "noProducts": "No products available",
     "checkBackLater": "Check back later for new listings"
   },
+  "categories": {
+    "electronics": "Electronics",
+    "fashion": "Fashion",
+    "home": "Home",
+    "sports": "Sports",
+    "books": "Books",
+    "toys": "Toys"
+  },
   "auth": {
     "login": "Log in",
     "register": "Sign up",
