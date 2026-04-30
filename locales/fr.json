@@ -520,6 +520,55 @@
       "errorPriceRequired": "Le prix doit être supérieur à 0",
       "errorConditionRequired": "L'état est obligatoire",
       "errorListingTypeRequired": "Le type de vente est obligatoire"
+    },
+    "sellerOrders": {
+      "title": "Mes Ventes",
+      "subtitle": "{{count}} commande(s) au total",
+      "filter": {
+        "all": "Toutes",
+        "toShip": "À expédier",
+        "shipped": "Expédiées",
+        "delivered": "Livrées",
+        "cancelled": "Annulées"
+      },
+      "noOrders": "Aucune vente",
+      "noOrdersSubtitle": "Vos ventes apparaîtront ici",
+      "items_one": "{{count}} article",
+      "items_other": "{{count}} articles",
+      "orderRef": "Commande #{{ref}}",
+      "buyerInfo": "Acheteur",
+      "shippingInfo": "Adresse de livraison",
+      "paymentInfo": "Paiement",
+      "paymentMethod": {
+        "cmi": "Carte bancaire (CMI)",
+        "cod": "Paiement à la livraison",
+        "bank_transfer": "Virement bancaire"
+      },
+      "myItems": "Mes articles",
+      "totals": "Totaux",
+      "subtotal": "Sous-total",
+      "shipping": "Livraison",
+      "myRevenue": "Mon revenu",
+      "actions": "Actions",
+      "markAsShipped": "Marquer comme expédiée",
+      "markAsDelivered": "Marquer comme livrée",
+      "contactBuyer": "Contacter l'acheteur",
+      "shippedSuccess": "Commande marquée comme expédiée",
+      "deliveredSuccess": "Commande marquée comme livrée",
+      "actionFailed": "Échec de l'action",
+      "confirmShip": "Confirmer l'expédition de cette commande ?",
+      "confirmDeliver": "Confirmer la livraison de cette commande ?",
+      "loading": "Chargement...",
+      "loadFailed": "Échec du chargement",
+      "notFound": "Commande introuvable",
+      "back": "Retour",
+      "status": {
+        "pending": "En attente",
+        "paid": "Payée",
+        "shipped": "Expédiée",
+        "delivered": "Livrée",
+        "cancelled": "Annulée"
+      }
     }
   }
 }

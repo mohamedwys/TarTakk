@@ -520,6 +520,55 @@
       "errorPriceRequired": "يجب أن يكون السعر أكبر من 0",
       "errorConditionRequired": "الحالة مطلوبة",
       "errorListingTypeRequired": "نوع البيع مطلوب"
+    },
+    "sellerOrders": {
+      "title": "مبيعاتي",
+      "subtitle": "{{count}} طلب(ات) إجمالاً",
+      "filter": {
+        "all": "الكل",
+        "toShip": "للشحن",
+        "shipped": "مشحونة",
+        "delivered": "مسلّمة",
+        "cancelled": "ملغاة"
+      },
+      "noOrders": "لا توجد مبيعات",
+      "noOrdersSubtitle": "ستظهر مبيعاتك هنا",
+      "items_one": "{{count}} منتج",
+      "items_other": "{{count}} منتجات",
+      "orderRef": "طلب #{{ref}}",
+      "buyerInfo": "المشتري",
+      "shippingInfo": "عنوان التوصيل",
+      "paymentInfo": "الدفع",
+      "paymentMethod": {
+        "cmi": "بطاقة بنكية (CMI)",
+        "cod": "الدفع عند الاستلام",
+        "bank_transfer": "تحويل بنكي"
+      },
+      "myItems": "منتجاتي",
+      "totals": "الإجماليات",
+      "subtotal": "المجموع الفرعي",
+      "shipping": "الشحن",
+      "myRevenue": "إيراداتي",
+      "actions": "الإجراءات",
+      "markAsShipped": "تحديد كمشحون",
+      "markAsDelivered": "تحديد كمسلّم",
+      "contactBuyer": "التواصل مع المشتري",
+      "shippedSuccess": "تم تحديد الطلب كمشحون",
+      "deliveredSuccess": "تم تحديد الطلب كمسلّم",
+      "actionFailed": "فشل الإجراء",
+      "confirmShip": "هل تؤكد شحن هذا الطلب؟",
+      "confirmDeliver": "هل تؤكد تسليم هذا الطلب؟",
+      "loading": "جاري التحميل...",
+      "loadFailed": "فشل التحميل",
+      "notFound": "الطلب غير موجود",
+      "back": "رجوع",
+      "status": {
+        "pending": "قيد الانتظار",
+        "paid": "مدفوع",
+        "shipped": "مشحون",
+        "delivered": "مسلّم",
+        "cancelled": "ملغى"
+      }
     }
   }
 }
