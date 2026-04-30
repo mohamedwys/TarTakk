@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Image,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -23,6 +22,7 @@ import {
   type SellerOrderDetail,
   type SellerOrderItem,
 } from '@/lib/services/sellerOrdersService';
+import { ProLayout } from '@/src/components/pro-portal';
 
 export default function ProPortalSellerOrderDetail() {
   const { t, i18n } = useTranslation();
@@ -165,10 +165,8 @@ export default function ProPortalSellerOrderDetail() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: config.theme.background }]}>
+    <ProLayout maxWidth={1100} scrollable contentStyle={styles.scroll}>
       <Stack.Screen options={{ headerShown: false }} />
-
-      <ScrollView contentContainerStyle={styles.scroll}>
         <Pressable
           style={styles.backBtn}
           onPress={() =>
@@ -387,8 +385,7 @@ export default function ProPortalSellerOrderDetail() {
             </Pressable>
           </View>
         </Section>
-      </ScrollView>
-    </View>
+    </ProLayout>
   );
 }
 
@@ -417,9 +414,8 @@ function Section({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  scroll: { gap: 16, paddingBottom: 32 },
+  scroll: { gap: 16 },
   backBtn: {
     flexDirection: 'row',
     alignItems: 'center',

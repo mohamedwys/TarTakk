@@ -3,6 +3,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useEnv } from '@/src/env';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProLayout } from '@/src/components/pro-portal';
 
 export default function ProPortalIndex() {
   const router = useRouter();
@@ -33,15 +34,17 @@ export default function ProPortalIndex() {
   );
 
   return (
-    <View
-      style={{
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: config.theme.background,
-      }}
-    >
-      <ActivityIndicator size="large" color={config.theme.primary} />
-    </View>
+    <ProLayout maxWidth={520} scrollable={false}>
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 400,
+        }}
+      >
+        <ActivityIndicator size="large" color={config.theme.primary} />
+      </View>
+    </ProLayout>
   );
 }

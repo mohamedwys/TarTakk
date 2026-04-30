@@ -19,6 +19,7 @@ import {
   type SellerOrderFilter,
   type SellerOrderRow,
 } from '@/lib/services/sellerOrdersService';
+import { ProLayout } from '@/src/components/pro-portal';
 
 const FILTERS: { key: SellerOrderFilter; tKey: string }[] = [
   { key: 'all', tKey: 'all' },
@@ -63,7 +64,7 @@ export default function ProPortalSellerOrdersList() {
   }, [loadData]);
 
   return (
-    <View style={[styles.container, { backgroundColor: config.theme.background }]}>
+    <ProLayout maxWidth={1100} scrollable={false} contentStyle={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
       <View style={styles.headerRow}>
@@ -148,7 +149,7 @@ export default function ProPortalSellerOrdersList() {
           )}
         />
       )}
-    </View>
+    </ProLayout>
   );
 }
 

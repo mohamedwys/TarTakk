@@ -23,6 +23,7 @@ import {
   type ProductCategory,
   type SellerProductRow,
 } from '@/lib/services/sellerProductsService';
+import { ProLayout } from '@/src/components/pro-portal';
 
 type StatusFilter = 'all' | 'active' | 'inactive';
 
@@ -117,7 +118,7 @@ export default function ProPortalProductsList() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: config.theme.background }]}>
+    <ProLayout maxWidth={1100} scrollable={false} contentStyle={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
       <View style={styles.headerRow}>
@@ -267,7 +268,7 @@ export default function ProPortalProductsList() {
           )}
         />
       )}
-    </View>
+    </ProLayout>
   );
 }
 

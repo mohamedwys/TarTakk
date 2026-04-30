@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -14,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 import { useEnv } from '@/src/env';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProLayout } from '@/src/components/pro-portal';
 
 export default function ProPortalLogin() {
   const { t } = useTranslation();
@@ -60,10 +59,7 @@ export default function ProPortalLogin() {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={[styles.container, { backgroundColor: config.theme.background }]}
-    >
+    <ProLayout maxWidth={520} scrollable>
       <View
         style={[
           styles.card,
@@ -155,20 +151,13 @@ export default function ProPortalLogin() {
           </Pressable>
         </View>
       </View>
-    </KeyboardAvoidingView>
+    </ProLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-  },
   card: {
     width: '100%',
-    maxWidth: 480,
     padding: 40,
     borderRadius: 16,
     borderWidth: StyleSheet.hairlineWidth,

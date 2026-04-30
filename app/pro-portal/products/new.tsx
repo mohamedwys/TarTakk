@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -19,6 +18,7 @@ import {
   type ProductFormValues,
 } from '@/src/components/ProPortal/Products/ProductForm';
 import { createProduct } from '@/lib/services/sellerProductsService';
+import { ProLayout } from '@/src/components/pro-portal';
 
 export default function ProPortalProductNew() {
   const { t } = useTranslation();
@@ -90,10 +90,7 @@ export default function ProPortalProductNew() {
   }
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: config.theme.background }]}
-      contentContainerStyle={styles.scrollContent}
-    >
+    <ProLayout maxWidth={1100} scrollable contentStyle={styles.scrollContent}>
       <Stack.Screen options={{ headerShown: false }} />
 
       <View style={styles.headerRow}>
@@ -144,13 +141,12 @@ export default function ProPortalProductNew() {
           )}
         </Pressable>
       </View>
-    </ScrollView>
+    </ProLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scrollContent: { gap: 18, paddingBottom: 48 },
+  scrollContent: { gap: 18 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   headerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   backBtn: {

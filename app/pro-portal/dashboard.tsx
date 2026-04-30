@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -21,6 +20,7 @@ import {
 import { formatPrice } from '@/src/utils/currency';
 import { KpiCard } from '@/src/components/ProPortal/Dashboard/KpiCard';
 import { RecentOrdersTable } from '@/src/components/ProPortal/Dashboard/RecentOrdersTable';
+import { ProLayout } from '@/src/components/pro-portal';
 
 export default function ProPortalDashboard() {
   const { t } = useTranslation();
@@ -62,10 +62,7 @@ export default function ProPortalDashboard() {
   }
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: config.theme.background }]}
-      contentContainerStyle={styles.scrollContent}
-    >
+    <ProLayout maxWidth={1200} scrollable contentStyle={styles.scrollContent}>
       <Stack.Screen options={{ headerShown: false }} />
 
       <View style={styles.headerSection}>
@@ -202,18 +199,13 @@ export default function ProPortalDashboard() {
           </Pressable>
         </View>
       </View>
-    </ScrollView>
+    </ProLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
   scrollContent: {
-    padding: 24,
     gap: 24,
-    maxWidth: 1200,
-    width: '100%',
-    alignSelf: 'center',
   },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   headerSection: { gap: 4 },

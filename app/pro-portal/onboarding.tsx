@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 import { useEnv } from '@/src/env';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProLayout } from '@/src/components/pro-portal';
 import {
   fetchUserKycStatus,
   submitKycApplication,
@@ -211,20 +212,14 @@ export default function ProPortalOnboarding() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: config.theme.background }]}>
+    <ProLayout maxWidth={720} scrollable>
       <Stack.Screen options={{ title: t('proPortal.kyc.title') }} />
-
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: config.theme.surface, borderColor: config.theme.border },
+        ]}
       >
-        <View
-          style={[
-            styles.card,
-            { backgroundColor: config.theme.surface, borderColor: config.theme.border },
-          ]}
-        >
           <Text style={[styles.title, { color: config.theme.textPrimary }]}>
             {t('proPortal.kyc.title')}
           </Text>
@@ -288,21 +283,16 @@ export default function ProPortalOnboarding() {
               <View style={styles.navButton} />
             )}
           </View>
-        </View>
-      </ScrollView>
-    </View>
+      </View>
+    </ProLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   loadingText: { fontSize: 13 },
-  scroll: { flex: 1 },
-  scrollContent: { padding: 24, alignItems: 'center' },
   card: {
     width: '100%',
-    maxWidth: 720,
     borderWidth: 1,
     borderRadius: 16,
     padding: 28,
