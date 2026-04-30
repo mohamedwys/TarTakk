@@ -6,12 +6,23 @@ import { UnreadCountProvider } from "@/contexts/UnreadCountContext";
 import { toastConfig } from "@/lib/toastConfig";
 import { CartProvider } from "@/src/cart";
 import { EnvProvider } from "@/src/env";
+import {
+  Manrope_400Regular,
+  Manrope_500Medium,
+  Manrope_600SemiBold,
+  Manrope_700Bold,
+  Manrope_800ExtraBold,
+  useFonts,
+} from "@expo-google-fonts/manrope";
 import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function AppContent() {
   const { isLoading } = useAuth();
@@ -151,6 +162,22 @@ function AppContent() {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    Manrope_400Regular,
+    Manrope_500Medium,
+    Manrope_600SemiBold,
+    Manrope_700Bold,
+    Manrope_800ExtraBold,
+  });
+
+  if (fontsLoaded) {
+    SplashScreen.hideAsync().catch(() => {});
+  }
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
     <EnvProvider>
       <SafeAreaProvider>
