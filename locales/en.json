@@ -385,6 +385,58 @@
       "settings": "Settings",
       "logout": "Logout"
     },
+    "admin": {
+      "title": "KYC Administration",
+      "subtitle": "Manage seller applications",
+      "navLink": "Admin",
+      "stats": {
+        "total": "Total",
+        "pending": "Pending",
+        "approvedMonth": "Approved this month",
+        "rejected": "Rejected"
+      },
+      "filter": {
+        "all": "All",
+        "pending": "Pending",
+        "under_review": "Under review",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "noSubmissions": "No applications",
+      "viewDetail": "View details →",
+      "detail": {
+        "businessInfo": "Business information",
+        "legalRep": "Legal representative",
+        "address": "Address",
+        "documents": "Documents",
+        "history": "History",
+        "user": "User",
+        "submittedOn": "Submitted on {{date}}",
+        "reviewedOn": "Reviewed on {{date}}",
+        "rejectionReason": "Rejection reason",
+        "reviewNotes": "Internal notes"
+      },
+      "actions": {
+        "approve": "Approve",
+        "reject": "Reject",
+        "approveConfirm": "Approve this application?",
+        "approveSuccess": "Application approved",
+        "rejectSuccess": "Application rejected",
+        "actionFailed": "Action failed"
+      },
+      "rejectModal": {
+        "title": "Reject application",
+        "subtitle": "Please indicate the reason for rejection (visible to the user)",
+        "reasonLabel": "Reason for rejection *",
+        "reasonPlaceholder": "E.g. invalid ICE, unreadable document...",
+        "notesLabel": "Internal notes (optional)",
+        "notesPlaceholder": "Notes for the internal team",
+        "cancel": "Cancel",
+        "confirm": "Confirm rejection"
+      },
+      "accessDenied": "Access denied",
+      "accessDeniedMessage": "This page is restricted to administrators."
+    },
     "dashboard": {
       "welcomeTitle": "Welcome {{name}} 👋",
       "welcomeSubtitle": "Here's an overview of your activity",

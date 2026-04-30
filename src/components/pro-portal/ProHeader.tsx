@@ -8,6 +8,7 @@ import { useEnv } from '@/src/env';
 import { Button } from '@/src/components/ui';
 import { spacing, radius, shadow } from '@/src/design/tokens';
 import { fontFamily } from '@/src/design/typography';
+import { isCurrentUserAdmin } from '@/lib/services/adminKycService';
 
 type NavItem = {
   key: string;
@@ -27,29 +28,57 @@ export function ProHeader() {
   const isLoggedIn = !!user?._id;
   const isProAccount = user?.accountType === 'B2C' || user?.accountType === 'B2B';
 
-  const navItems: NavItem[] =
-    isLoggedIn && isProAccount
-      ? [
-          {
-            key: 'dashboard',
-            label: t('proPortal.nav.dashboard'),
-            path: '/pro-portal/dashboard',
-            icon: 'speedometer-outline',
-          },
-          {
-            key: 'products',
-            label: t('proPortal.nav.products'),
-            path: '/pro-portal/products',
-            icon: 'cube-outline',
-          },
-          {
-            key: 'orders',
-            label: t('proPortal.nav.orders'),
-            path: '/pro-portal/orders',
-            icon: 'receipt-outline',
-          },
-        ]
-      : [];
+  const [isAdmin, setIsAdmin] = React.useState(false);
+  React.useEffect(() => {
+    let cancelled = false;
+    if (!isLoggedIn) {
+      setIsAdmin(false);
+      return;
+    }
+    isCurrentUserAdmin()
+      .then((value) => {
+        if (!cancelled) setIsAdmin(value);
+      })
+      .catch(() => {
+        if (!cancelled) setIsAdmin(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoggedIn, user?._id]);
+
+  const navItems: NavItem[] = (() => {
+    if (!isLoggedIn || !isProAccount) return [];
+    const items: NavItem[] = [
+      {
+        key: 'dashboard',
+        label: t('proPortal.nav.dashboard'),
+        path: '/pro-portal/dashboard',
+        icon: 'speedometer-outline',
+      },
+      {
+        key: 'products',
+        label: t('proPortal.nav.products'),
+        path: '/pro-portal/products',
+        icon: 'cube-outline',
+      },
+      {
+        key: 'orders',
+        label: t('proPortal.nav.orders'),
+        path: '/pro-portal/orders',
+        icon: 'receipt-outline',
+      },
+    ];
+    if (isAdmin) {
+      items.push({
+        key: 'admin',
+        label: t('proPortal.admin.navLink'),
+        path: '/pro-portal/admin/kyc',
+        icon: 'shield-checkmark-outline',
+      });
+    }
+    return items;
+  })();
 
   const handleLogout = async () => {
     await logout();

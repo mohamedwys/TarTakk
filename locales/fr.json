@@ -385,6 +385,58 @@
       "settings": "Paramètres",
       "logout": "Déconnexion"
     },
+    "admin": {
+      "title": "Administration KYC",
+      "subtitle": "Gestion des candidatures vendeurs",
+      "navLink": "Admin",
+      "stats": {
+        "total": "Total",
+        "pending": "En attente",
+        "approvedMonth": "Approuvées ce mois",
+        "rejected": "Rejetées"
+      },
+      "filter": {
+        "all": "Toutes",
+        "pending": "En attente",
+        "under_review": "En revue",
+        "approved": "Approuvées",
+        "rejected": "Rejetées"
+      },
+      "noSubmissions": "Aucune candidature",
+      "viewDetail": "Voir le détail →",
+      "detail": {
+        "businessInfo": "Informations entreprise",
+        "legalRep": "Représentant légal",
+        "address": "Adresse",
+        "documents": "Documents",
+        "history": "Historique",
+        "user": "Utilisateur",
+        "submittedOn": "Soumis le {{date}}",
+        "reviewedOn": "Examiné le {{date}}",
+        "rejectionReason": "Raison du rejet",
+        "reviewNotes": "Notes internes"
+      },
+      "actions": {
+        "approve": "Approuver",
+        "reject": "Rejeter",
+        "approveConfirm": "Approuver cette candidature ?",
+        "approveSuccess": "Candidature approuvée",
+        "rejectSuccess": "Candidature rejetée",
+        "actionFailed": "Échec de l'action"
+      },
+      "rejectModal": {
+        "title": "Rejeter la candidature",
+        "subtitle": "Veuillez indiquer la raison du rejet (visible par l'utilisateur)",
+        "reasonLabel": "Raison du rejet *",
+        "reasonPlaceholder": "Ex: ICE invalide, document illisible...",
+        "notesLabel": "Notes internes (optionnel)",
+        "notesPlaceholder": "Notes pour l'équipe interne",
+        "cancel": "Annuler",
+        "confirm": "Confirmer le rejet"
+      },
+      "accessDenied": "Accès refusé",
+      "accessDeniedMessage": "Cette page est réservée aux administrateurs."
+    },
     "dashboard": {
       "welcomeTitle": "Bienvenue {{name}} 👋",
       "welcomeSubtitle": "Voici un aperçu de votre activité",

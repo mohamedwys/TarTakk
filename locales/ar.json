@@ -385,6 +385,58 @@
       "settings": "الإعدادات",
       "logout": "تسجيل الخروج"
     },
+    "admin": {
+      "title": "إدارة KYC",
+      "subtitle": "إدارة طلبات البائعين",
+      "navLink": "المشرف",
+      "stats": {
+        "total": "الإجمالي",
+        "pending": "قيد الانتظار",
+        "approvedMonth": "الموافق عليها هذا الشهر",
+        "rejected": "المرفوضة"
+      },
+      "filter": {
+        "all": "الكل",
+        "pending": "قيد الانتظار",
+        "under_review": "قيد المراجعة",
+        "approved": "موافق عليها",
+        "rejected": "مرفوضة"
+      },
+      "noSubmissions": "لا توجد طلبات",
+      "viewDetail": "عرض التفاصيل ←",
+      "detail": {
+        "businessInfo": "معلومات الشركة",
+        "legalRep": "الممثل القانوني",
+        "address": "العنوان",
+        "documents": "الوثائق",
+        "history": "السجل",
+        "user": "المستخدم",
+        "submittedOn": "تم التقديم في {{date}}",
+        "reviewedOn": "تمت المراجعة في {{date}}",
+        "rejectionReason": "سبب الرفض",
+        "reviewNotes": "ملاحظات داخلية"
+      },
+      "actions": {
+        "approve": "موافقة",
+        "reject": "رفض",
+        "approveConfirm": "الموافقة على هذا الطلب؟",
+        "approveSuccess": "تمت الموافقة على الطلب",
+        "rejectSuccess": "تم رفض الطلب",
+        "actionFailed": "فشل الإجراء"
+      },
+      "rejectModal": {
+        "title": "رفض الطلب",
+        "subtitle": "يرجى الإشارة إلى سبب الرفض (مرئي للمستخدم)",
+        "reasonLabel": "سبب الرفض *",
+        "reasonPlaceholder": "مثال: ICE غير صالح، وثيقة غير مقروءة...",
+        "notesLabel": "ملاحظات داخلية (اختياري)",
+        "notesPlaceholder": "ملاحظات للفريق الداخلي",
+        "cancel": "إلغاء",
+        "confirm": "تأكيد الرفض"
+      },
+      "accessDenied": "الوصول مرفوض",
+      "accessDeniedMessage": "هذه الصفحة مخصصة للمشرفين فقط."
+    },
     "dashboard": {
       "welcomeTitle": "مرحبا {{name}} 👋",
       "welcomeSubtitle": "إليك نظرة عامة على نشاطك",
