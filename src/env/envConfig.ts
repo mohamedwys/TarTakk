@@ -1,35 +1,35 @@
 import type { EnvConfig, EnvId, EnvTheme } from './envTypes';
 
 const themeB2C: EnvTheme = {
-  primary: '#0B1F3A',
-  primaryDark: '#061427',
+  primary: '#1B4332',
+  primaryDark: '#0F2A1F',
   accent: '#C9A24B',
   accentDark: '#A38336',
-  background: '#FFFFFF',
-  surface: '#F5F7FA',
-  textPrimary: '#0B1F3A',
-  textSecondary: '#5C6B7A',
+  background: '#F8F5F0',
+  surface: '#FFFFFF',
+  textPrimary: '#1B2818',
+  textSecondary: '#5B6B5F',
   textInverse: '#FFFFFF',
-  border: '#E2E8F0',
+  border: '#E5E0D5',
   success: '#16A34A',
   warning: '#F59E0B',
   error: '#DC2626',
 };
 
 const themeC2C: EnvTheme = {
-  primary: '#4ECDC4',
-  primaryDark: '#3BAFA8',
-  accent: '#FF6B6B',
-  accentDark: '#E55555',
-  background: '#FFFFFF',
-  surface: '#FFF8F3',
-  textPrimary: '#2D3436',
-  textSecondary: '#636E72',
+  primary: '#E84855',
+  primaryDark: '#C53847',
+  accent: '#FFB800',
+  accentDark: '#D69900',
+  background: '#FFF9F0',
+  surface: '#FFFFFF',
+  textPrimary: '#2A1810',
+  textSecondary: '#6B5747',
   textInverse: '#FFFFFF',
-  border: '#FFE0D6',
+  border: '#F2E8D5',
   success: '#16A34A',
-  warning: '#FFB84D',
-  error: '#FF6B6B',
+  warning: '#FFB800',
+  error: '#DC2626',
 };
 
 export const ENV_CONFIGS: readonly EnvConfig[] = [
