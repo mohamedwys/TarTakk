@@ -32,6 +32,7 @@ const CATEGORIES = [
     emoji: "📱",
     icon: "phone-portrait-outline" as const,
     imageUrl: "https://images.unsplash.com/photo-1592286927505-1def25115481?w=200&q=80",
+    bgColor: "#FFF4C4", // jaune doux
     badge: "new" as const,
   },
   {
@@ -39,6 +40,7 @@ const CATEGORIES = [
     emoji: "👗",
     icon: "shirt-outline" as const,
     imageUrl: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=200&q=80",
+    bgColor: "#D4F0E0", // mint
     badge: "sale" as const,
   },
   {
@@ -46,6 +48,7 @@ const CATEGORIES = [
     emoji: "🏠",
     icon: "home-outline" as const,
     imageUrl: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=200&q=80",
+    bgColor: "#D4E8FF", // bleu ciel
     badge: null,
   },
   {
@@ -53,6 +56,7 @@ const CATEGORIES = [
     emoji: "⚽",
     icon: "football-outline" as const,
     imageUrl: "https://images.unsplash.com/photo-1576435728678-68d0fbf94e91?w=200&q=80",
+    bgColor: "#FFD4D4", // rose pâle
     badge: null,
   },
   {
@@ -60,6 +64,7 @@ const CATEGORIES = [
     emoji: "📚",
     icon: "book-outline" as const,
     imageUrl: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=200&q=80",
+    bgColor: "#E8DAFF", // lavande
     badge: null,
   },
   {
@@ -67,6 +72,7 @@ const CATEGORIES = [
     emoji: "🎮",
     icon: "game-controller-outline" as const,
     imageUrl: "https://images.unsplash.com/photo-1486401899868-0e435ed85128?w=200&q=80",
+    bgColor: "#FFE0CC", // pêche
     badge: null,
   },
 ];
@@ -277,6 +283,7 @@ export default function HomeScreen() {
                 icon={cat.icon}
                 emoji={cat.emoji}
                 imageUrl={cat.imageUrl}
+                bgColor={cat.bgColor}
                 badge={cat.badge}
                 onPress={() => handleCategoryPress(cat.key)}
               />

@@ -14,6 +14,7 @@ type Props = {
   emoji?: string;
   imageUrl?: string;
   badge?: 'sale' | 'new' | null;
+  bgColor?: string;
   onPress?: () => void;
 };
 
@@ -22,16 +23,22 @@ const BADGE_CONFIG = {
   new: { label: 'NEW', variant: 'info' as const },
 };
 
-// Beige Noon-style background palette (lighter, softer)
-const BG_COLORS = ['#FFF8E7', '#FFF2EB', '#FFF6DE', '#FCF1E5', '#FFEFE3'];
+// Vibrant pastel category palette
+const BG_COLORS = [
+  '#FFF4C4', // jaune doux
+  '#D4F0E0', // mint
+  '#D4E8FF', // bleu ciel
+  '#FFD4D4', // rose pâle
+  '#E8DAFF', // lavande
+  '#FFE0CC', // pêche
+];
 
-export function CategoryPill({ label, icon, emoji, imageUrl, badge, onPress }: Props) {
+export function CategoryPill({ label, icon, emoji, imageUrl, badge, bgColor, onPress }: Props) {
   const { config } = useEnv();
   const theme = config.theme;
   const [pressed, setPressed] = React.useState(false);
 
-  const bgIndex = label.length % BG_COLORS.length;
-  const bgColor = BG_COLORS[bgIndex];
+  const finalBg = bgColor ?? BG_COLORS[label.length % BG_COLORS.length];
 
   return (
     <MotiView
@@ -42,7 +49,7 @@ export function CategoryPill({ label, icon, emoji, imageUrl, badge, onPress }: P
         onPress={onPress}
         onPressIn={() => setPressed(true)}
         onPressOut={() => setPressed(false)}
-        style={[styles.container, { backgroundColor: bgColor }, shadow.sm]}
+        style={[styles.container, { backgroundColor: finalBg }, shadow.sm]}
       >
         {badge && (
           <View style={styles.badgeWrap}>
@@ -82,7 +89,7 @@ export function CategoryPill({ label, icon, emoji, imageUrl, badge, onPress }: P
 const styles = StyleSheet.create({
   container: {
     width: 100,
-    height: 110,
+    height: 120,
     borderRadius: radius.lg,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.xs,
@@ -100,8 +107,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xxs,
   },
   image: {
-    width: 56,
-    height: 56,
+    width: 60,
+    height: 60,
     borderRadius: 12,
   },
   emoji: {
