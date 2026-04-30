@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as DocumentPicker from 'expo-document-picker';
+import type * as DocumentPickerType from 'expo-document-picker';
 import Toast from 'react-native-toast-message';
 import { useTranslation } from 'react-i18next';
 import { useEnv } from '@/src/env';
@@ -43,7 +43,14 @@ export function Step4Documents({ formData, setFormData, userId }: Props) {
   const handlePick = async (slot: DocSlot) => {
     if (!userId) return;
 
+    if (Platform.OS !== 'web') {
+      console.warn('[Step4Documents] Document picker is web-only; KYC wizard is gated by BlockMobileWrapper.');
+      Toast.show({ type: 'error', text1: t('proPortal.kyc.uploadFailed') });
+      return;
+    }
+
     try {
+      const DocumentPicker = (await import('expo-document-picker')) as typeof DocumentPickerType;
       const result = await DocumentPicker.getDocumentAsync({
         type: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
         copyToCacheDirectory: true,
