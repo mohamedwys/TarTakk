@@ -1,128 +1,67 @@
 // app/product/[id].tsx
-import AnimatedButton from "@/components/AnimatedButton";
-import { FadeInView, SlideInView } from "@/components/AnimatedViews";
 import ProductDetailSkeleton from "@/components/ProductDetailSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  conversationsAPI,
-  messagesAPI,
-  productsAPI,
-  reviewsAPI,
-} from "@/lib/api";
-import { filterImages, safeUri } from "@/lib/utils/image";
+import { productsAPI } from "@/lib/api";
+import { filterImages } from "@/lib/utils/image";
 import { useCart } from "@/src/cart";
 import { useEnv } from "@/src/env";
+import { Badge, Button, Divider, IconButton } from "@/src/components/ui";
+import {
+  CollapsibleSection,
+  ImageCarousel,
+  SellerCard,
+  StickyCTA,
+  StockCard,
+} from "@/src/components/product";
+import { spacing } from "@/src/design/tokens";
+import { fontFamily, typography } from "@/src/design/typography";
 import { formatPrice } from "@/src/utils/currency";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Alert,
-  Clipboard,
-  Dimensions,
-  Image,
-  Linking,
-  Modal,
-  Pressable,
   ScrollView,
-  Share,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
 import Toast from "react-native-toast-message";
 
-const { width } = Dimensions.get("window");
+const CONDITION_VARIANT: Record<string, "success" | "warning" | "default"> = {
+  neuf: "success",
+  new: "success",
+  "très_bon": "warning",
+  "like new": "warning",
+  bon: "default",
+  good: "default",
+  acceptable: "default",
+};
+
+function cleanLocation(raw: string | null | undefined): string {
+  if (!raw) return "";
+  return raw
+    .split(",")
+    .map((p) => p.trim())
+    .filter((p) => p && p !== "null" && p !== "undefined")
+    .join(", ");
+}
 
 export default function ProductDetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
   const { user: currentUser } = useAuth();
   const { addItem } = useCart();
   const { config } = useEnv();
   const { t } = useTranslation();
-  const { id } = useLocalSearchParams();
   const router = useRouter();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+
   const [product, setProduct] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [productError, setProductError] = useState<string | null>(null);
-  const [similarProducts, setSimilarProducts] = useState<any[]>([]);
-  const [sellerReviews, setSellerReviews] = useState<any[]>([]);
-  const [productReviews, setProductReviews] = useState<any[]>([]);
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [reviewType, setReviewType] = useState<"product" | "seller">("product");
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewComment, setReviewComment] = useState("");
-  const [submittingReview, setSubmittingReview] = useState(false);
-  const [showMessageModal, setShowMessageModal] = useState(false);
-  const [firstMessage, setFirstMessage] = useState("");
-  const [sendingMessage, setSendingMessage] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
 
-  const fetchSellerReviews = async () => {
-    try {
-      const sellerId = product?.sellerId?._id;
-      if (sellerId) {
-        const response = await reviewsAPI.getReviews(sellerId);
-        setSellerReviews(response.reviews);
-      }
-    } catch (error) {
-      console.error("Fetch seller reviews error:", error);
-    }
-  };
-
-  const handleCall = async () => {
-    const phoneNumber = product?.seller?.phoneNumber;
-
-    if (!phoneNumber) {
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Seller phone number not available",
-      });
-      return;
-    }
-
-    const formattedNumber = phoneNumber.startsWith("+")
-      ? phoneNumber
-      : `+234${phoneNumber}`;
-
-    const phoneUrl = `tel:${formattedNumber}`;
-
-    try {
-      const canOpen = await Linking.canOpenURL(phoneUrl);
-
-      if (canOpen) {
-        await Linking.openURL(phoneUrl);
-      } else {
-        Toast.show({
-          type: "info",
-          text1: "Phone Call",
-          text2: `Call ${formattedNumber}`,
-        });
-        Clipboard.setString(formattedNumber);
-      }
-    } catch (error) {
-      console.error("Call error:", error);
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Unable to make phone call. Please try on a real device.",
-      });
-    }
-  };
-
-  const fetchProductReviews = async () => {
-    try {
-      const response = await reviewsAPI.getProductReviews(id as string);
-      setProductReviews(response.reviews);
-    } catch (error) {
-      console.error("Fetch product reviews error:", error);
-    }
-  };
+  const theme = config.theme;
 
   const fetchProduct = async () => {
     try {
@@ -142,189 +81,9 @@ export default function ProductDetailScreen() {
     }
   };
 
-  const fetchSimilarProducts = async (category: string) => {
-    try {
-      const response = await productsAPI.getProductsByCategory(
-        category,
-        id as string
-      );
-      setSimilarProducts(response.products.slice(0, 6));
-    } catch (error) {
-      console.error("Fetch similar products error:", error);
-    }
-  };
-
-  const checkFavoriteStatus = async () => {
-    try {
-      const favorites = await AsyncStorage.getItem("favorites");
-      if (favorites) {
-        const favoritesArray = JSON.parse(favorites);
-        setIsFavorite(favoritesArray.includes(id));
-      }
-    } catch (error) {
-      console.error("Check favorite error:", error);
-    }
-  };
-
-  const toggleFavorite = async () => {
-    try {
-      const favorites = await AsyncStorage.getItem("favorites");
-      let favoritesArray = favorites ? JSON.parse(favorites) : [];
-
-      if (isFavorite) {
-        favoritesArray = favoritesArray.filter((favId: string) => favId !== id);
-      } else {
-        favoritesArray.push(id);
-      }
-
-      await AsyncStorage.setItem("favorites", JSON.stringify(favoritesArray));
-      setIsFavorite(!isFavorite);
-    } catch (error) {
-      console.error("Toggle favorite error:", error);
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Failed to update favorites",
-      });
-    }
-  };
-
   useEffect(() => {
-    if (id) {
-      fetchProduct();
-      checkFavoriteStatus();
-    }
+    if (id) fetchProduct();
   }, [id]);
-
-  useEffect(() => {
-    if (product?.category) {
-      fetchSimilarProducts(product.category);
-    }
-  }, [product?.category]);
-
-  useEffect(() => {
-    if (product?.sellerId) {
-      fetchSellerReviews();
-    }
-    if (id) {
-      fetchProductReviews();
-    }
-  }, [product?.sellerId, id]);
-
-  const handleSubmitReview = async () => {
-    if (!reviewComment.trim()) {
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Please write a review comment",
-      });
-      return;
-    }
-
-    setSubmittingReview(true);
-    try {
-      if (reviewType === "product") {
-        await reviewsAPI.createProductReview({
-          productId: id as string,
-          rating: reviewRating,
-          comment: reviewComment.trim(),
-        });
-        fetchProductReviews();
-      } else {
-        await reviewsAPI.createReview({
-          sellerId: product?.sellerId?._id,
-          rating: reviewRating,
-          comment: reviewComment.trim(),
-        });
-        fetchSellerReviews();
-      }
-
-      setShowReviewForm(false);
-      setReviewComment("");
-      setReviewRating(5);
-      Toast.show({
-        type: "success",
-        text1: "Review submitted!",
-        text2: `Thank you for ${
-          reviewType === "product"
-            ? "reviewing this product"
-            : "rating this seller"
-        }`,
-      });
-    } catch (error: any) {
-      console.error("Submit review error:", error);
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: error.message || "Failed to submit review",
-      });
-    } finally {
-      setSubmittingReview(false);
-    }
-  };
-
-  const handleShare = async () => {
-    try {
-      await Share.share({
-        message: `Check out ${product?.title} for ₦${product?.price}`,
-        url: `myapp://product/${id}`,
-      });
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleMessage = () => {
-    if (!currentUser) {
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Please log in to message the seller",
-      });
-      return;
-    }
-
-    setShowMessageModal(true);
-  };
-
-  const handleSendFirstMessage = async () => {
-    if (!firstMessage.trim()) {
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Please enter a message",
-      });
-      return;
-    }
-
-    try {
-      setSendingMessage(true);
-
-      const response = await conversationsAPI.createConversation({
-        productId: product?.id,
-        sellerId: product?.seller?.id,
-      });
-
-      // Send first message
-      await messagesAPI.sendMessage({
-        conversationId: response.conversation.id,
-        content: firstMessage.trim(),
-      });
-
-      setShowMessageModal(false);
-      setFirstMessage("");
-      router.push(`/chat/${response.conversation.id}` as any);
-    } catch (error: any) {
-      console.error("Send first message error:", error);
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: error.message || "Failed to send message",
-      });
-    } finally {
-      setSendingMessage(false);
-    }
-  };
 
   const isC2C = product?.listing_type === "C2C";
   const sellerId =
@@ -332,7 +91,6 @@ export default function ProductDetailScreen() {
   const isOwnProduct = !!currentUser?.id && currentUser.id === sellerId;
   const stockQty = product?.stock_qty ?? 1;
   const isOutOfStock = stockQty <= 0;
-  const isLowStock = stockQty > 0 && stockQty <= 5;
 
   const handleMessageSeller = () => {
     if (!currentUser) {
@@ -385,10 +143,9 @@ export default function ProductDetailScreen() {
       Toast.show({ type: "error", text1: t("product.outOfStock") });
       return;
     }
-
     const result = await addItem(product.id, 1);
     if (result.success) {
-      router.push("/checkout");
+      router.push("/checkout" as any);
     } else {
       Toast.show({
         type: "error",
@@ -398,57 +155,10 @@ export default function ProductDetailScreen() {
     }
   };
 
-  const handleDeleteReview = async (
-    reviewId: string,
-    type: "product" | "seller"
-  ) => {
-    Alert.alert(
-      "Delete Review",
-      "Are you sure you want to delete this review?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await reviewsAPI.deleteReview(reviewId);
-
-              if (type === "product") {
-                fetchProductReviews();
-              } else {
-                fetchSellerReviews();
-              }
-
-              Toast.show({
-                type: "success",
-                text1: "Review deleted",
-                text2: "Your review has been removed",
-              });
-            } catch (error: any) {
-              Toast.show({
-                type: "error",
-                text1: "Error",
-                text2: error.message || "Failed to delete review",
-              });
-            }
-          },
-        },
-      ]
-    );
-  };
-
   if (isLoading) {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={() => router.back()}
-          >
-            <Ionicons name="arrow-back" size={24} color="#2D3436" />
-          </TouchableOpacity>
-        </View>
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <Stack.Screen options={{ headerShown: false }} />
         <ProductDetailSkeleton />
       </View>
     );
@@ -456,1209 +166,222 @@ export default function ProductDetailScreen() {
 
   if (productError || !product) {
     return (
-      <View style={styles.errorContainer}>
-        <Ionicons name="cloud-offline-outline" size={48} color="#B2BEC3" />
-        <Text style={styles.errorText}>
-          {productError || "Product not found"}
+      <View style={[styles.errorContainer, { backgroundColor: theme.background }]}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <Ionicons name="cloud-offline-outline" size={48} color={theme.textTertiary} />
+        <Text style={[typography.body, { color: theme.textSecondary, marginTop: spacing.sm, marginBottom: spacing.md }]}>
+          {productError || t("product.notFound")}
         </Text>
-        <TouchableOpacity style={styles.retryButton} onPress={fetchProduct}>
-          <Text style={styles.retryText}>Retry</Text>
-        </TouchableOpacity>
+        <Button variant="primary" size="md" onPress={fetchProduct}>
+          {t("common.retry", { defaultValue: "Retry" })}
+        </Button>
       </View>
     );
   }
 
+  const images = filterImages(product.images);
+  const cityLabel = cleanLocation(
+    product.location?.city
+      ? `${product.location.city}${product.location.state ? ", " + product.location.state : ""}`
+      : product.city ?? null
+  );
+  const conditionKey = product.condition?.toLowerCase?.() ?? "";
+  const conditionVariant = CONDITION_VARIANT[conditionKey] ?? "default";
+  const conditionLabel = product.condition ? String(product.condition).toUpperCase() : "";
+
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.headerButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={24} color="#2D3436" />
-        </TouchableOpacity>
-        <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.headerButton} onPress={handleShare}>
-            <Ionicons name="share-outline" size={24} color="#2D3436" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={toggleFavorite}
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Stack.Screen options={{ headerShown: false }} />
+
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <ImageCarousel images={images as string[]} aspectRatio={4 / 3} />
+
+        <View style={styles.content}>
+          <Text
+            style={[
+              typography.h2,
+              { color: theme.textPrimary, fontFamily: fontFamily.extrabold },
+            ]}
           >
-            <Ionicons
-              name={isFavorite ? "heart" : "heart-outline"}
-              size={24}
-              color={isFavorite ? "#FF6B6B" : "#2D3436"}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
+            {product.title}
+          </Text>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Image Carousel */}
-        <FadeInView duration={300}>
-          <View style={styles.imageContainer}>
-            <ScrollView
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              onScroll={(e) => {
-                const index = Math.round(e.nativeEvent.contentOffset.x / width);
-                setCurrentImageIndex(index);
-              }}
-              scrollEventThrottle={16}
+          {cityLabel ? (
+            <View style={styles.locationRow}>
+              <Ionicons name="location-outline" size={14} color={theme.textTertiary} />
+              <Text style={[typography.caption, { color: theme.textTertiary }]}>
+                {cityLabel}
+              </Text>
+            </View>
+          ) : null}
+
+          <View style={styles.priceRow}>
+            <Text
+              style={[
+                styles.price,
+                { color: theme.primary, fontFamily: fontFamily.extrabold },
+              ]}
             >
-              {filterImages(product.images).map((image, index) => (
-                <Image
-                  key={index}
-                  source={safeUri(image)}
-                  style={styles.productImage}
-                />
-              ))}
-            </ScrollView>
-
-            {/* Image Indicators */}
-            <View style={styles.imageIndicators}>
-              {filterImages(product.images).map((_, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.indicator,
-                    index === currentImageIndex && styles.activeIndicator,
-                  ]}
-                />
-              ))}
-            </View>
-
-            {/* Condition Badge */}
-            <View style={styles.conditionBadge}>
-              <Text style={styles.conditionText}>{product.condition}</Text>
-            </View>
-          </View>
-        </FadeInView>
-
-        {/* Product Info */}
-        <SlideInView direction="up" delay={150}>
-          <View style={styles.infoContainer}>
-            <Text style={styles.price}>
               {formatPrice(product.price, product.currency || "MAD")}
             </Text>
-            <Text style={styles.title}>{product.title}</Text>
-
-            <View style={styles.badgeRow}>
-              {isC2C && (
-                <View
-                  style={[
-                    styles.badge,
-                    { backgroundColor: config.theme.surface },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.badgeText,
-                      { color: config.theme.textSecondary },
-                    ]}
-                  >
-                    {t("product.soldByIndividual")}
-                  </Text>
-                </View>
-              )}
-              {!isC2C && product?.seller?.is_verified && (
-                <View
-                  style={[
-                    styles.badge,
-                    { backgroundColor: config.theme.success + "20" },
-                  ]}
-                >
-                  <Ionicons
-                    name="checkmark-circle"
-                    size={14}
-                    color={config.theme.success}
-                  />
-                  <Text
-                    style={[
-                      styles.badgeText,
-                      { color: config.theme.success, marginLeft: 4 },
-                    ]}
-                  >
-                    {t("product.verifiedProSeller")}
-                  </Text>
-                </View>
-              )}
-            </View>
-
-            {!isC2C && (
-              <View style={styles.stockRow}>
-                {isOutOfStock ? (
-                  <Text
-                    style={[
-                      styles.stockText,
-                      { color: config.theme.error },
-                    ]}
-                  >
-                    {t("product.outOfStock")}
-                  </Text>
-                ) : isLowStock ? (
-                  <Text
-                    style={[
-                      styles.stockText,
-                      { color: config.theme.warning },
-                    ]}
-                  >
-                    {t("product.lowStock", { count: stockQty })}
-                  </Text>
-                ) : (
-                  <Text
-                    style={[
-                      styles.stockText,
-                      { color: config.theme.success },
-                    ]}
-                  >
-                    {t("product.inStock", { count: stockQty })}
-                  </Text>
-                )}
-              </View>
-            )}
-
-            <View style={styles.metaInfo}>
-              <View style={styles.metaItem}>
-                <Ionicons name="location-outline" size={16} color="#636E72" />
-                <Text style={styles.metaText}>
-                  {product.location?.city}, {product.location?.state}
-                </Text>
-              </View>
-              <View style={styles.metaItem}>
-                <Ionicons name="time-outline" size={16} color="#636E72" />
-                <Text style={styles.metaText}>
-                  {new Date(product.createdAt).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </Text>
-              </View>
-            </View>
-
-            {/* Category Tag */}
-            <View style={styles.categoryTag}>
-              <Ionicons name="pricetag-outline" size={14} color="#4ECDC4" />
-              <Text style={styles.categoryText}>{product.category}</Text>
-            </View>
+            {conditionLabel ? (
+              <Badge variant={conditionVariant} size="md">
+                {conditionLabel}
+              </Badge>
+            ) : null}
           </View>
-        </SlideInView>
 
-        <SlideInView direction="up" delay={250}>
-          <TouchableOpacity
-            style={styles.sellerContainer}
-            onPress={() => {
-              const sellerId = product?.seller?._id || product?.seller?.id;
-              console.log("🧑 Seller clicked, ID:", sellerId);
-              if (sellerId) {
-                router.push(`/user/${sellerId}`);
-              }
-            }}
+          <View style={{ marginTop: spacing.md }}>
+            <StockCard stockQty={stockQty} showShipping={!isC2C} />
+          </View>
+
+          <Divider variant="subtle" spacing="lg" />
+
+          <Text
+            style={[
+              typography.h4,
+              {
+                color: theme.textPrimary,
+                fontFamily: fontFamily.bold,
+                marginBottom: spacing.sm,
+              },
+            ]}
           >
-            <View style={styles.sellerLeft}>
-              <Image
-                source={safeUri(product?.seller?.avatar)}
-                style={styles.sellerAvatar}
-              />
-              <View style={styles.sellerInfo}>
-                <View style={styles.sellerNameRow}>
-                  <Text style={styles.sellerName}>
-                    {product?.seller?.name || "Unknown Seller"}
-                  </Text>
-                  {product?.seller?.emailVerified && (
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={16}
-                      color="#4ECDC4"
-                    />
-                  )}
-                </View>
-                <View style={styles.sellerMeta}>
-                  <Ionicons name="star" size={14} color="#FFB84D" />
-                  <Text style={styles.sellerRatingText}>
-                    {product?.seller?.rating?.toFixed(1) || 0} (
-                    {product?.seller?.totalReviews || 0})
-                  </Text>
-                </View>
-                <Text style={styles.responseTime}>
-                  Responds in {product?.seller?.responseTime || "~1 hour"}
-                </Text>
-              </View>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#B2BEC3" />
-          </TouchableOpacity>
-        </SlideInView>
+            {t("product.description")}
+          </Text>
+          <CollapsibleSection text={product.description || ""} />
 
-        {/* Description */}
-        <SlideInView direction="up" delay={350}>
-          <View style={styles.descriptionContainer}>
-            <Text style={styles.sectionTitle}>Description</Text>
-            <Text style={styles.description}>{product.description}</Text>
-          </View>
-        </SlideInView>
-
-        {/* Product Reviews Section */}
-        {/* Product Reviews Section */}
-        <SlideInView direction="up" delay={450}>
-          <View style={styles.reviewsSection}>
-            <View style={styles.reviewsHeader}>
-              <Text style={styles.sectionTitle}>
-                Product Reviews ({productReviews.length})
-              </Text>
-              <TouchableOpacity
-                style={styles.addReviewButton}
-                onPress={() => {
-                  setReviewType("product");
-                  setShowReviewForm(true);
-                }}
-              >
-                <Ionicons name="add-circle" size={20} color="#2D3436" />
-                <Text style={styles.addReviewText}>Review Product</Text>
-              </TouchableOpacity>
-            </View>
-
-            {productReviews.length > 0 ? (
-              productReviews.slice(0, 2).map((review) => {
-                return (
-                  <View key={review.id} style={styles.reviewCard}>
-                    <View style={styles.reviewHeader}>
-                      <Image
-                        source={safeUri(review.reviewer?.avatar)}
-                        style={styles.reviewerAvatar}
-                      />
-                      <View style={styles.reviewInfo}>
-                        <Text style={styles.reviewerName}>
-                          {review.reviewer.name}
-                        </Text>
-                        <View style={styles.ratingContainer}>
-                          {[...Array(5)].map((_, i) => (
-                            <Ionicons
-                              key={i}
-                              name={i < review.rating ? "star" : "star-outline"}
-                              size={14}
-                              color="#FFD700"
-                            />
-                          ))}
-                        </View>
-                      </View>
-                      {review.reviewer.id === currentUser?._id && (
-                        <TouchableOpacity
-                          style={styles.deleteButton}
-                          onPress={() =>
-                            handleDeleteReview(review.id, "product")
-                          }
-                        >
-                          <Ionicons
-                            name="trash-outline"
-                            size={16}
-                            color="#FF6B6B"
-                          />
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                    <Text style={styles.reviewComment}>{review.comment}</Text>
-                    <Text style={styles.reviewDate}>
-                      {new Date(review.createdAt).toLocaleDateString()}
-                    </Text>
-                  </View>
-                );
-              })
-            ) : (
-              <Text style={styles.noReviewsText}>
-                No product reviews yet. Be the first to review this product!
-              </Text>
-            )}
-          </View>
-        </SlideInView>
-        {/* Seller Reviews Section */}
-        <SlideInView direction="up" delay={500}>
-          <View style={styles.reviewsSection}>
-            <View style={styles.reviewsHeader}>
-              <Text style={styles.sectionTitle}>
-                Seller Reviews ({sellerReviews.length})
-              </Text>
-              <TouchableOpacity
-                style={styles.addReviewButton}
-                onPress={() => {
-                  setReviewType("seller");
-                  setShowReviewForm(true);
-                }}
-              >
-                <Ionicons name="add-circle" size={20} color="#2D3436" />
-                <Text style={styles.addReviewText}>Rate Seller</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Average Rating */}
-            {sellerReviews.length > 0 && (
-              <View style={styles.averageRating}>
-                <Text style={styles.averageRatingText}>
-                  ⭐ {product?.sellerId?.rating?.toFixed(1) || 0} (
-                  {sellerReviews.length} reviews)
-                </Text>
-              </View>
-            )}
-
-            {sellerReviews.length > 0 ? (
-              sellerReviews.slice(0, 2).map((review) => (
-                <View key={review.id} style={styles.reviewCard}>
-                  <View style={styles.reviewHeader}>
-                    <Image
-                      source={safeUri(review.reviewer?.avatar)}
-                      style={styles.reviewerAvatar}
-                    />
-                    <View style={styles.reviewInfo}>
-                      <Text style={styles.reviewerName}>
-                        {review.reviewer.name}
-                      </Text>
-                      <View style={styles.ratingContainer}>
-                        {[...Array(5)].map((_, i) => (
-                          <Ionicons
-                            key={i}
-                            name={i < review.rating ? "star" : "star-outline"}
-                            size={14}
-                            color="#FFD700"
-                          />
-                        ))}
-                      </View>
-                    </View>
-                  </View>
-                  <Text style={styles.reviewComment}>{review.comment}</Text>
-                  <Text style={styles.reviewDate}>
-                    {new Date(review.createdAt).toLocaleDateString()}
-                  </Text>
-                </View>
-              ))
-            ) : (
-              <Text style={styles.noReviewsText}>
-                No seller reviews yet. Be the first to rate this seller!
-              </Text>
-            )}
-          </View>
-        </SlideInView>
-
-        {/* Similar Products */}
-        <SlideInView direction="up" delay={550}>
-          <View style={styles.similarSection}>
-            <Text style={styles.sectionTitle}>Similar Products</Text>
-            {similarProducts.length > 0 ? (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.similarProductsContainer}
-              >
-                {similarProducts.map((item) => (
-                  <TouchableOpacity
-                    key={item.id}
-                    style={styles.similarProductCard}
-                    onPress={() => router.push(`/product/${item.id}`)}
-                  >
-                    <Image
-                      source={safeUri(item.images?.[0])}
-                      style={styles.similarProductImage}
-                    />
-                    <View style={styles.similarProductInfo}>
-                      <Text
-                        style={styles.similarProductTitle}
-                        numberOfLines={2}
-                      >
-                        {item.title}
-                      </Text>
-                      <Text style={styles.similarProductPrice}>
-                        ₦{item.price.toLocaleString()}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            ) : (
-              <Text style={styles.placeholderText}>
-                No similar products found
-              </Text>
-            )}
-          </View>
-        </SlideInView>
-
-        {/* Bottom Spacing */}
-        <View style={styles.bottomSpacing} />
-      </ScrollView>
-
-      {/* Review Modal */}
-      {showReviewForm && (
-        <View style={styles.reviewModalOverlay}>
-          <View style={styles.reviewModal}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                {reviewType === "product" ? "Review Product" : "Rate Seller"}
-              </Text>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => setShowReviewForm(false)}
-              >
-                <Ionicons name="close" size={24} color="#2D3436" />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.ratingInput}>
-              <Text style={styles.ratingLabel}>Rating:</Text>
-              <View style={styles.starsContainer}>
-                {[...Array(5)].map((_, i) => (
-                  <TouchableOpacity
-                    key={i}
-                    onPress={() => setReviewRating(i + 1)}
-                    disabled={submittingReview}
-                  >
-                    <Ionicons
-                      name={i < reviewRating ? "star" : "star-outline"}
-                      size={30}
-                      color="#FFD700"
-                    />
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-
-            <TextInput
-              style={styles.commentInput}
-              placeholder={`Write your ${reviewType} review...`}
-              value={reviewComment}
-              onChangeText={setReviewComment}
-              multiline
-              numberOfLines={4}
-              editable={!submittingReview}
-            />
-
-            <View style={styles.formButtons}>
-              <TouchableOpacity
-                style={[
-                  styles.cancelButton,
-                  submittingReview && styles.disabledButton,
-                ]}
-                onPress={() => setShowReviewForm(false)}
-                disabled={submittingReview}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.submitButton,
-                  submittingReview && styles.disabledButton,
-                ]}
-                onPress={handleSubmitReview}
-                disabled={submittingReview}
-              >
-                <Text style={styles.submitButtonText}>
-                  {submittingReview ? "Submitting..." : "Submit Review"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      )}
-      {/* Message Modal */}
-      <Modal
-        visible={showMessageModal}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setShowMessageModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.messageModal}>
-            <Text style={styles.modalTitle}>Message Seller</Text>
-            <Text style={styles.modalSubtitle}>
-              Start a conversation about "{product?.title}"
-            </Text>
-
-            <TextInput
-              style={styles.messageInput}
-              placeholder="Type your message..."
-              value={firstMessage}
-              onChangeText={setFirstMessage}
-              multiline={true}
-              maxLength={500}
-              editable={!sendingMessage}
-            />
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => {
-                  setShowMessageModal(false);
-                  setFirstMessage("");
-                }}
-                disabled={sendingMessage}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.sendButton}
-                onPress={handleSendFirstMessage}
-                disabled={sendingMessage || !firstMessage.trim()}
-              >
-                <Text style={styles.sendButtonText}>
-                  {sendingMessage ? "Sending..." : "Send Message"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-      {/* Bottom Actions */}
-      <View style={styles.bottomActions}>
-        <TouchableOpacity style={styles.callButton} onPress={handleCall}>
-          <Ionicons name="call-outline" size={24} color="#2D3436" />
-        </TouchableOpacity>
-        <View style={styles.ctaContainer}>
-          {isC2C ? (
-            <Pressable
-              style={[
-                styles.primaryCTA,
-                { backgroundColor: config.theme.primary },
-              ]}
-              onPress={handleMessageSeller}
-            >
-              <Ionicons
-                name="chatbubble-outline"
-                size={20}
-                color={config.theme.textInverse}
-              />
+          {!isC2C && product.seller && (
+            <>
+              <Divider variant="subtle" spacing="lg" />
               <Text
                 style={[
-                  styles.primaryCTAText,
-                  { color: config.theme.textInverse },
+                  typography.h4,
+                  {
+                    color: theme.textPrimary,
+                    fontFamily: fontFamily.bold,
+                    marginBottom: spacing.sm,
+                  },
                 ]}
               >
-                {t("product.messageSeller")}
+                {t("product.seller")}
               </Text>
-            </Pressable>
-          ) : (
-            <>
-              <Pressable
-                style={[
-                  styles.primaryCTA,
-                  { backgroundColor: config.theme.primary },
-                  isOutOfStock && styles.disabledCTA,
-                ]}
+              <SellerCard
+                sellerId={sellerId}
+                name={
+                  product.seller.name ||
+                  product.seller.company_name ||
+                  t("product.seller")
+                }
+                avatarUrl={product.seller.avatar_url ?? product.seller.avatar}
+                rating={product.seller.rating}
+                salesCount={product.seller.sales_count ?? product.seller.totalReviews}
+                isVerified={
+                  product.seller.is_verified ?? product.seller.emailVerified
+                }
+              />
+            </>
+          )}
+
+          <View style={{ height: 100 }} />
+        </View>
+      </ScrollView>
+
+      <View style={styles.floatingHeader} pointerEvents="box-none">
+        <IconButton
+          icon="chevron-back"
+          variant="default"
+          size="md"
+          onPress={() => router.back()}
+          accessibilityLabel="Back"
+          style={{ backgroundColor: "rgba(255,255,255,0.95)" }}
+        />
+        <IconButton
+          icon={isFavorite ? "heart" : "heart-outline"}
+          variant="default"
+          size="md"
+          onPress={() => setIsFavorite(!isFavorite)}
+          accessibilityLabel="Favorite"
+          style={{ backgroundColor: "rgba(255,255,255,0.95)" }}
+        />
+      </View>
+
+      <StickyCTA>
+        {isC2C ? (
+          <Button
+            variant="primary"
+            size="lg"
+            fullWidth
+            iconLeft="chatbubble-outline"
+            onPress={handleMessageSeller}
+          >
+            {t("product.messageSeller")}
+          </Button>
+        ) : (
+          <>
+            <View style={{ flex: 1 }}>
+              <Button
+                variant="secondary"
+                size="lg"
+                fullWidth
+                iconLeft="cart-outline"
                 onPress={handleAddToCart}
                 disabled={isOutOfStock}
               >
-                <Ionicons
-                  name="cart-outline"
-                  size={20}
-                  color={config.theme.textInverse}
-                />
-                <Text
-                  style={[
-                    styles.primaryCTAText,
-                    { color: config.theme.textInverse },
-                  ]}
-                >
-                  {t("product.addToCart")}
-                </Text>
-              </Pressable>
-              <Pressable
-                style={[
-                  styles.secondaryCTA,
-                  { backgroundColor: config.theme.accent },
-                  isOutOfStock && styles.disabledCTA,
-                ]}
+                {t("product.addToCart")}
+              </Button>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
                 onPress={handleBuyNow}
                 disabled={isOutOfStock}
               >
-                <Text
-                  style={[
-                    styles.secondaryCTAText,
-                    { color: config.theme.textInverse },
-                  ]}
-                >
-                  {t("product.buyNow")}
-                </Text>
-              </Pressable>
-            </>
-          )}
-        </View>
-      </View>
+                {t("product.buyNow")}
+              </Button>
+            </View>
+          </>
+        )}
+      </StickyCTA>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FAFAFA",
-  },
-  header: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 16,
-    zIndex: 10,
-    backgroundColor: "transparent",
-  },
-  headerButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  headerRight: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  content: {
-    flex: 1,
-  },
-  imageContainer: {
-    position: "relative",
-    height: 400,
-    backgroundColor: "#F5F5F5",
-  },
-  productImage: {
-    width,
-    height: 400,
-    resizeMode: "cover",
-  },
-  imageIndicators: {
-    position: "absolute",
-    bottom: 20,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 6,
-  },
-  indicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "rgba(255, 255, 255, 0.5)",
-  },
-  activeIndicator: {
-    width: 24,
-    backgroundColor: "#fff",
-  },
-  conditionBadge: {
-    position: "absolute",
-    top: 100,
-    left: 20,
-    backgroundColor: "#4ECDC4",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  conditionText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  infoContainer: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    marginTop: -24,
-  },
-  price: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: "#2D3436",
-    marginBottom: 8,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#2D3436",
-    lineHeight: 28,
-    marginBottom: 12,
-  },
-  metaInfo: {
-    flexDirection: "row",
-    gap: 16,
-    marginBottom: 12,
-  },
-  metaItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  metaText: {
-    fontSize: 14,
-    color: "#636E72",
-  },
-  categoryTag: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "flex-start",
-    backgroundColor: "#E5F9F8",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    gap: 6,
-  },
-  categoryText: {
-    fontSize: 13,
-    color: "#4ECDC4",
-    fontWeight: "600",
-  },
-  sellerContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    marginTop: 8,
-    padding: 20,
-  },
-  sellerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-  sellerAvatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    marginRight: 12,
-  },
-  sellerInfo: {
-    flex: 1,
-  },
-  sellerNameRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 4,
-  },
-  sellerName: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#2D3436",
-  },
-  sellerMeta: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginBottom: 2,
-  },
-  ratingText: {
-    fontSize: 13,
-    color: "#636E72",
-    fontWeight: "500",
-  },
-  responseTime: {
-    fontSize: 12,
-    color: "#B2BEC3",
-  },
-  descriptionContainer: {
-    backgroundColor: "#fff",
-    marginTop: 8,
-    padding: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#2D3436",
-    marginBottom: 12,
-  },
-  description: {
-    fontSize: 15,
-    color: "#636E72",
-    lineHeight: 24,
-  },
-  reviewsSection: {
-    backgroundColor: "#fff",
-    marginTop: 8,
-    padding: 20,
-  },
-  reviewsHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  addReviewButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: "#4ECDC4",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  addReviewText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  averageRating: {
-    marginBottom: 16,
-  },
-  averageRatingText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#2D3436",
-  },
-  reviewCard: {
-    backgroundColor: "#F8F9FA",
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  reviewHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  reviewerAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
-  },
-  reviewInfo: {
-    flex: 1,
-  },
-  reviewerName: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#2D3436",
-    marginBottom: 4,
-  },
-  ratingContainer: {
-    flexDirection: "row",
-  },
-  reviewComment: {
-    fontSize: 14,
-    color: "#636E72",
-    lineHeight: 20,
-    marginBottom: 8,
-  },
-  reviewDate: {
-    fontSize: 12,
-    color: "#B2BEC3",
-  },
-  noReviewsText: {
-    fontSize: 14,
-    color: "#B2BEC3",
-    fontStyle: "italic",
-    textAlign: "center",
-    marginTop: 20,
-  },
-  deleteButton: {
-    padding: 4,
-  },
-  similarSection: {
-    backgroundColor: "#fff",
-    marginTop: 8,
-    padding: 20,
-  },
-  placeholderText: {
-    fontSize: 14,
-    color: "#B2BEC3",
-    fontStyle: "italic",
-  },
-  bottomSpacing: {
-    height: 100,
-  },
-  bottomActions: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 34,
-    borderTopWidth: 1,
-    borderTopColor: "#E5E5EA",
-    gap: 12,
-  },
-  callButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#F5F5F5",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  messageButtonWrapper: {
-    flex: 1,
-  },
-  messageButton: {
-    height: 56,
-    borderRadius: 28,
-  },
-  badgeRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginBottom: 12,
-  },
-  badge: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  stockRow: {
-    marginBottom: 12,
-  },
-  stockText: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  ctaContainer: {
-    flex: 1,
-    flexDirection: "row",
-    gap: 8,
-  },
-  primaryCTA: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 56,
-    borderRadius: 28,
-    gap: 8,
-    paddingHorizontal: 12,
-  },
-  primaryCTAText: {
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  secondaryCTA: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    height: 56,
-    borderRadius: 28,
-    paddingHorizontal: 12,
-  },
-  secondaryCTAText: {
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  disabledCTA: {
-    opacity: 0.5,
-  },
+  container: { flex: 1 },
+  scrollContent: { paddingBottom: 100 },
+  content: { paddingHorizontal: spacing.md, paddingTop: spacing.md },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FAFAFA",
     paddingHorizontal: 40,
   },
-  errorText: {
-    fontSize: 16,
-    color: "#636E72",
-    textAlign: "center",
-    marginTop: 12,
-    marginBottom: 20,
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: spacing.xs,
+    gap: 4,
   },
-  retryButton: {
-    backgroundColor: "#4ECDC4",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
+  priceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: spacing.md,
   },
-  retryText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  similarProductsContainer: {
-    paddingHorizontal: 20,
-    gap: 12,
-  },
-  similarProductCard: {
-    width: 140,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  similarProductImage: {
-    width: "100%",
-    height: 100,
-    backgroundColor: "#F5F5F5",
-  },
-  similarProductInfo: {
-    padding: 12,
-  },
-  similarProductTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#2D3436",
-    marginBottom: 6,
-    lineHeight: 18,
-  },
-  similarProductPrice: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#2D3436",
-  },
-  reviewModalOverlay: {
+  price: { fontSize: 28 },
+  floatingHeader: {
     position: "absolute",
-    top: 0,
+    top: 50,
     left: 0,
     right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000,
-  },
-  reviewModal: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 20,
-    width: "90%",
-    maxWidth: 400,
-  },
-  modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#2D3436",
-  },
-  closeButton: {
-    padding: 4,
-  },
-  ratingInput: {
-    marginBottom: 16,
-  },
-  ratingLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#2D3436",
-    marginBottom: 8,
-  },
-  starsContainer: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  commentInput: {
-    borderWidth: 1,
-    borderColor: "#E5E5EA",
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: "#2D3436",
-    minHeight: 100,
-    textAlignVertical: "top",
-    marginBottom: 20,
-  },
-  formButtons: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  cancelButton: {
-    flex: 1,
-    backgroundColor: "#F5F5F5",
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  cancelButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#636E72",
-  },
-  submitButton: {
-    flex: 1,
-    backgroundColor: "#4ECDC4",
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  submitButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#fff",
-  },
-  disabledButton: {
-    opacity: 0.6,
-  },
-  sellerRatingText: {
-    fontSize: 13,
-    color: "#636E72",
-    fontWeight: "500",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  messageModal: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    padding: 20,
-    margin: 20,
-    width: "90%",
-    maxWidth: 400,
-  },
-  modalSubtitle: {
-    fontSize: 14,
-    color: "#636E72",
-    marginBottom: 20,
-  },
-  messageInput: {
-    borderWidth: 1,
-    borderColor: "#DDE1E5",
-    borderRadius: 8,
-    padding: 12,
-    minHeight: 80,
-    textAlignVertical: "top",
-    fontSize: 16,
-    marginBottom: 20,
-  },
-  modalButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  sendButton: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: "#0984E3",
-    marginLeft: 8,
-  },
-  sendButtonText: {
-    textAlign: "center",
-    fontSize: 16,
-    color: "#FFFFFF",
-    fontWeight: "600",
+    paddingHorizontal: spacing.md,
   },
 });
