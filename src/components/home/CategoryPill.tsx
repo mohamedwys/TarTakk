@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
 import { useEnv } from '@/src/env';
@@ -12,6 +12,7 @@ type Props = {
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
   emoji?: string;
+  imageUrl?: string;
   badge?: 'sale' | 'new' | null;
   onPress?: () => void;
 };
@@ -21,10 +22,10 @@ const BADGE_CONFIG = {
   new: { label: 'NEW', variant: 'info' as const },
 };
 
-// Beige Noon-style background palette
-const BG_COLORS = ['#FFF3DE', '#FFE9E0', '#FFEFD6', '#FBE8DC', '#FFE6D8', '#F7EBD8'];
+// Beige Noon-style background palette (lighter, softer)
+const BG_COLORS = ['#FFF8E7', '#FFF2EB', '#FFF6DE', '#FCF1E5', '#FFEFE3'];
 
-export function CategoryPill({ label, icon, emoji, badge, onPress }: Props) {
+export function CategoryPill({ label, icon, emoji, imageUrl, badge, onPress }: Props) {
   const { config } = useEnv();
   const theme = config.theme;
   const [pressed, setPressed] = React.useState(false);
@@ -51,7 +52,13 @@ export function CategoryPill({ label, icon, emoji, badge, onPress }: Props) {
           </View>
         )}
         <View style={styles.iconWrap}>
-          {emoji ? (
+          {imageUrl ? (
+            <Image
+              source={{ uri: imageUrl }}
+              style={styles.image}
+              resizeMode="cover"
+            />
+          ) : emoji ? (
             <Text style={styles.emoji}>{emoji}</Text>
           ) : (
             <Ionicons name={icon} size={32} color={theme.textPrimary} />
@@ -74,8 +81,8 @@ export function CategoryPill({ label, icon, emoji, badge, onPress }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    width: 96,
-    height: 108,
+    width: 100,
+    height: 110,
     borderRadius: radius.lg,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.xs,
@@ -91,6 +98,11 @@ const styles = StyleSheet.create({
   },
   iconWrap: {
     marginBottom: spacing.xxs,
+  },
+  image: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
   },
   emoji: {
     fontSize: 32,

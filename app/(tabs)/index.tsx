@@ -27,12 +27,48 @@ import {
 } from "react-native";
 
 const CATEGORIES = [
-  { key: "electronics", emoji: "📱", icon: "phone-portrait-outline" as const, badge: "new" as const },
-  { key: "fashion", emoji: "👗", icon: "shirt-outline" as const, badge: "sale" as const },
-  { key: "home", emoji: "🏠", icon: "home-outline" as const, badge: null },
-  { key: "sports", emoji: "⚽", icon: "football-outline" as const, badge: null },
-  { key: "books", emoji: "📚", icon: "book-outline" as const, badge: null },
-  { key: "toys", emoji: "🎮", icon: "game-controller-outline" as const, badge: null },
+  {
+    key: "electronics",
+    emoji: "📱",
+    icon: "phone-portrait-outline" as const,
+    imageUrl: "https://images.unsplash.com/photo-1592286927505-1def25115481?w=200&q=80",
+    badge: "new" as const,
+  },
+  {
+    key: "fashion",
+    emoji: "👗",
+    icon: "shirt-outline" as const,
+    imageUrl: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=200&q=80",
+    badge: "sale" as const,
+  },
+  {
+    key: "home",
+    emoji: "🏠",
+    icon: "home-outline" as const,
+    imageUrl: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=200&q=80",
+    badge: null,
+  },
+  {
+    key: "sports",
+    emoji: "⚽",
+    icon: "football-outline" as const,
+    imageUrl: "https://images.unsplash.com/photo-1576435728678-68d0fbf94e91?w=200&q=80",
+    badge: null,
+  },
+  {
+    key: "books",
+    emoji: "📚",
+    icon: "book-outline" as const,
+    imageUrl: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=200&q=80",
+    badge: null,
+  },
+  {
+    key: "toys",
+    emoji: "🎮",
+    icon: "game-controller-outline" as const,
+    imageUrl: "https://images.unsplash.com/photo-1486401899868-0e435ed85128?w=200&q=80",
+    badge: null,
+  },
 ];
 
 const CATEGORY_TO_SEARCH: Record<string, string> = {
@@ -240,6 +276,7 @@ export default function HomeScreen() {
                 label={t(`categories.${cat.key}`, { defaultValue: cat.key })}
                 icon={cat.icon}
                 emoji={cat.emoji}
+                imageUrl={cat.imageUrl}
                 badge={cat.badge}
                 onPress={() => handleCategoryPress(cat.key)}
               />
