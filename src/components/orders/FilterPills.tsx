@@ -1,8 +1,8 @@
+import { radius, spacing } from '@/src/design/tokens';
+import { fontFamily, typography } from '@/src/design/typography';
+import { useEnv } from '@/src/env';
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
-import { useEnv } from '@/src/env';
-import { spacing, radius } from '@/src/design/tokens';
-import { typography, fontFamily } from '@/src/design/typography';
 
 type Filter<T extends string = string> = {
   key: T;
@@ -24,8 +24,8 @@ export function FilterPills<T extends string = string>({
   const theme = config.theme;
 
   return (
-    <ScrollView
-      horizontal
+    <ScrollView 
+      horizontal 
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.container}
     >
@@ -43,7 +43,8 @@ export function FilterPills<T extends string = string>({
               },
             ]}
           >
-            <Text
+            <Text 
+              numberOfLines={1}
               style={[
                 typography.bodySmall,
                 {
@@ -72,5 +73,8 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     borderRadius: radius.full,
     borderWidth: 1,
+    height: 36,                  // ← Hauteur fixe pour éviter étirement
+    alignItems: 'center',        // ← Centre verticalement le texte
+    justifyContent: 'center',    // ← Centre horizontalement
   },
 });
