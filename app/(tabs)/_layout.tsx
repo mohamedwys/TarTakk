@@ -6,7 +6,7 @@ import { EnvSwitcher } from '@/src/components/env/EnvSwitcher';
 import { CustomTabBar } from '@/src/components/tabs/CustomTabBar';
 import { useEnv } from '@/src/env';
 import { Ionicons } from '@expo/vector-icons';
-import { Tabs, useRouter, usePathname } from 'expo-router';
+import { Tabs, usePathname, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
@@ -95,13 +95,8 @@ export default function TabLayout() {
           name="create"
           options={{
             title: t('tabs.sell'),
-            tabBarIcon: ({ color, size, focused }) => (
-              <AnimatedTabIcon
-                name="add-circle"
-                color={focused ? config.theme.primary : color}
-                size={size + 8}
-                focused={focused}
-              />
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="add" size={28} color={color} />
             ),
             tabBarLabel: t('tabs.sell'),
             href: current === 'marketplace_c2c' ? '/(tabs)/create' : null,
