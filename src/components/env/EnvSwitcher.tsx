@@ -1,22 +1,29 @@
 import React from 'react';
-import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { MotiView } from 'moti';
+import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { useEnv } from '@/src/env';
 import type { EnvConfig } from '@/src/env';
+import { spacing, radius, shadow } from '@/src/design/tokens';
+import { fontFamily } from '@/src/design/typography';
+import { animationConfig } from '@/src/design/animations';
 
 type Props = {
   language?: 'en' | 'fr' | 'ar';
 };
 
 export function EnvSwitcher({ language = 'en' }: Props) {
-  const { current, allEnvs, setEnv } = useEnv();
+  const { current, allEnvs, setEnv, config } = useEnv();
+  const containerBg = config.theme.background;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: containerBg }]}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        accessibilityRole="tablist"
       >
         {allEnvs.map((env) => (
           <EnvTile
@@ -43,12 +50,12 @@ function EnvTile({
   language: 'en' | 'fr' | 'ar';
   onPress: () => void;
 }) {
-  const scale = React.useRef(new Animated.Value(1)).current;
+  const [pressed, setPressed] = React.useState(false);
 
-  const onPressIn = () =>
-    Animated.spring(scale, { toValue: 0.95, useNativeDriver: true }).start();
-  const onPressOut = () =>
-    Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start();
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    onPress();
+  };
 
   const label =
     language === 'fr'
@@ -57,53 +64,75 @@ function EnvTile({
       ? env.fallbackLabelAr
       : env.fallbackLabelEn;
 
-  const bg = active ? env.theme.primary : '#F5F7FA';
-  const fg = active ? env.theme.textInverse : '#5C6B7A';
+  const tileBg = env.theme.surface;
+  const borderColor = active ? env.theme.primary : env.theme.border;
+  const borderWidth = active ? 2 : StyleSheet.hairlineWidth;
+  const iconColor = active ? env.theme.primary : env.theme.textSecondary;
+  const labelColor = active ? env.theme.textPrimary : env.theme.textSecondary;
 
   return (
-    <Pressable
-      onPress={onPress}
-      onPressIn={onPressIn}
-      onPressOut={onPressOut}
-      accessible
-      accessibilityRole="tab"
-      accessibilityState={{ selected: active }}
-      accessibilityLabel={label}
+    <MotiView
+      animate={{ scale: pressed ? 0.95 : active ? 1.02 : 1 }}
+      transition={animationConfig.press}
     >
-      <Animated.View style={[styles.tile, { backgroundColor: bg, transform: [{ scale }] }]}>
-        <Ionicons name={env.iconName as any} size={20} color={fg} />
-        <Text style={[styles.label, { color: fg }]} numberOfLines={1}>
+      <Pressable
+        onPress={handlePress}
+        onPressIn={() => setPressed(true)}
+        onPressOut={() => setPressed(false)}
+        accessibilityRole="tab"
+        accessibilityState={{ selected: active }}
+        accessibilityLabel={label}
+        style={[
+          styles.tile,
+          {
+            backgroundColor: tileBg,
+            borderColor,
+            borderWidth,
+          },
+          active ? shadow.md : shadow.sm,
+        ]}
+      >
+        <View style={styles.iconWrap}>
+          <Ionicons name={env.iconName as any} size={32} color={iconColor} />
+        </View>
+        <Text
+          style={[
+            styles.label,
+            { color: labelColor, fontFamily: fontFamily.semibold },
+          ]}
+          numberOfLines={2}
+        >
           {label}
         </Text>
-      </Animated.View>
-    </Pressable>
+      </Pressable>
+    </MotiView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    height: 64,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E2E8F0',
+    paddingVertical: spacing.sm,
   },
   scrollContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
+    gap: spacing.sm,
     alignItems: 'center',
-    gap: 8,
   },
   tile: {
-    width: 110,
-    height: 48,
-    borderRadius: 14,
+    width: 88,
+    height: 88,
+    borderRadius: radius.lg,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 4,
-    gap: 2,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.sm,
+  },
+  iconWrap: {
+    marginBottom: spacing.xxs,
   },
   label: {
     fontSize: 11,
-    fontWeight: '600',
+    lineHeight: 14,
     textAlign: 'center',
   },
 });
