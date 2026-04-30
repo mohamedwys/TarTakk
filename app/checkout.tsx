@@ -1,23 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import {
-  ActivityIndicator,
   Image,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { Ionicons } from '@expo/vector-icons';
 import { useEnv } from '@/src/env';
 import { useCart } from '@/src/cart';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatPrice } from '@/src/utils/currency';
 import { createOrder } from '@/lib/services/orderService';
+import { Button, Input, Divider } from '@/src/components/ui';
+import { SectionCard, PaymentMethodCard } from '@/src/components/checkout';
+import { spacing, radius, shadow } from '@/src/design/tokens';
+import { typography, fontFamily } from '@/src/design/typography';
 import Toast from 'react-native-toast-message';
 
 type PaymentMethod = 'cod' | 'bank_transfer' | 'cmi';
@@ -25,6 +27,7 @@ type PaymentMethod = 'cod' | 'bank_transfer' | 'cmi';
 export default function CheckoutScreen() {
   const { t } = useTranslation();
   const { config } = useEnv();
+  const theme = config.theme;
   const router = useRouter();
   const { user } = useAuth();
   const { items, totalAmount, clearCart, isEmpty } = useCart();
@@ -81,8 +84,6 @@ export default function CheckoutScreen() {
       });
 
       if (paymentMethod === 'cmi') {
-        // Cart is cleared in payment/success.tsx after payment confirmation,
-        // so the user can retry without re-filling the cart.
         router.replace({ pathname: '/payment/[orderId]', params: { orderId } });
       } else {
         await clearCart();
@@ -108,7 +109,7 @@ export default function CheckoutScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: config.theme.background }]}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <Stack.Screen options={{ title: t('checkout.title'), headerShown: true }} />
 
       <KeyboardAvoidingView
@@ -118,365 +119,254 @@ export default function CheckoutScreen() {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <View
-            style={[
-              styles.section,
-              { backgroundColor: config.theme.surface, borderColor: config.theme.border },
-            ]}
+          <SectionCard
+            icon="bag-outline"
+            title={`${t('checkout.items')} (${items.length})`}
           >
-            <Text style={[styles.sectionTitle, { color: config.theme.textPrimary }]}>
-              {t('checkout.items')} ({items.length})
-            </Text>
-            {items.map((item) => (
-              <View key={item.id} style={styles.itemRow}>
-                <Image
-                  source={{ uri: item.product?.thumbnail_url ?? '' }}
-                  style={styles.itemImage}
-                />
-                <View style={styles.itemInfo}>
-                  <Text
-                    style={[styles.itemTitle, { color: config.theme.textPrimary }]}
-                    numberOfLines={1}
+            {items.map((item) => {
+              const product: any = item.product ?? {};
+              const lineTotal = (product.price ?? 0) * item.quantity;
+              return (
+                <View key={item.id} style={styles.itemRow}>
+                  <View
+                    style={[
+                      styles.itemImageWrap,
+                      { backgroundColor: theme.surfaceMuted },
+                    ]}
                   >
-                    {item.product?.title}
-                  </Text>
-                  <Text style={[styles.itemMeta, { color: config.theme.textSecondary }]}>
-                    x{item.quantity}  ·  {formatPrice(item.product?.price ?? 0, currency)}
+                    {product.thumbnail_url ? (
+                      <Image
+                        source={{ uri: product.thumbnail_url }}
+                        style={styles.itemImage}
+                      />
+                    ) : (
+                      <Ionicons
+                        name="cube-outline"
+                        size={20}
+                        color={theme.textTertiary}
+                      />
+                    )}
+                  </View>
+                  <View style={styles.itemInfo}>
+                    <Text
+                      style={[
+                        typography.bodySmall,
+                        { color: theme.textPrimary, fontFamily: fontFamily.semibold },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {product.title}
+                    </Text>
+                    <Text
+                      style={[typography.caption, { color: theme.textTertiary }]}
+                    >
+                      x{item.quantity} · {formatPrice(product.price ?? 0, currency)}
+                    </Text>
+                  </View>
+                  <Text
+                    style={[
+                      typography.body,
+                      { color: theme.primary, fontFamily: fontFamily.bold },
+                    ]}
+                  >
+                    {formatPrice(lineTotal, currency)}
                   </Text>
                 </View>
-                <Text style={[styles.itemSubtotal, { color: config.theme.primary }]}>
-                  {formatPrice((item.product?.price ?? 0) * item.quantity, currency)}
-                </Text>
-              </View>
-            ))}
-          </View>
+              );
+            })}
+          </SectionCard>
 
-          <View
-            style={[
-              styles.section,
-              { backgroundColor: config.theme.surface, borderColor: config.theme.border },
-            ]}
+          <SectionCard
+            icon="location-outline"
+            title={t('checkout.shippingAddress')}
           >
-            <Text style={[styles.sectionTitle, { color: config.theme.textPrimary }]}>
-              {t('checkout.shippingAddress')}
-            </Text>
-
-            <Text style={[styles.label, { color: config.theme.textSecondary }]}>
-              {t('checkout.fullName')}
-            </Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: config.theme.background,
-                  color: config.theme.textPrimary,
-                  borderColor: config.theme.border,
-                },
-              ]}
-              placeholder={t('checkout.fullNamePlaceholder')}
-              placeholderTextColor={config.theme.textSecondary}
+            <Input
+              label={t('checkout.fullName')}
               value={name}
               onChangeText={setName}
             />
-
-            <Text style={[styles.label, { color: config.theme.textSecondary }]}>
-              {t('checkout.phone')}
-            </Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: config.theme.background,
-                  color: config.theme.textPrimary,
-                  borderColor: config.theme.border,
-                },
-              ]}
-              placeholder={t('checkout.phonePlaceholder')}
-              placeholderTextColor={config.theme.textSecondary}
+            <Input
+              label={t('checkout.phone')}
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
             />
-
-            <Text style={[styles.label, { color: config.theme.textSecondary }]}>
-              {t('checkout.address')}
-            </Text>
-            <TextInput
-              style={[
-                styles.input,
-                styles.textArea,
-                {
-                  backgroundColor: config.theme.background,
-                  color: config.theme.textPrimary,
-                  borderColor: config.theme.border,
-                },
-              ]}
-              placeholder={t('checkout.addressPlaceholder')}
-              placeholderTextColor={config.theme.textSecondary}
+            <Input
+              label={t('checkout.address')}
               value={address}
               onChangeText={setAddress}
               multiline
-              numberOfLines={2}
             />
-
-            <Text style={[styles.label, { color: config.theme.textSecondary }]}>
-              {t('checkout.city')}
-            </Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: config.theme.background,
-                  color: config.theme.textPrimary,
-                  borderColor: config.theme.border,
-                },
-              ]}
-              placeholder={t('checkout.cityPlaceholder')}
-              placeholderTextColor={config.theme.textSecondary}
+            <Input
+              label={t('checkout.city')}
               value={city}
               onChangeText={setCity}
             />
-
-            <Text style={[styles.label, { color: config.theme.textSecondary }]}>
-              {t('checkout.shippingNotes')}
-            </Text>
-            <TextInput
-              style={[
-                styles.input,
-                styles.textArea,
-                {
-                  backgroundColor: config.theme.background,
-                  color: config.theme.textPrimary,
-                  borderColor: config.theme.border,
-                },
-              ]}
-              placeholder={t('checkout.shippingNotesPlaceholder')}
-              placeholderTextColor={config.theme.textSecondary}
+            <Input
+              label={t('checkout.shippingNotes')}
               value={notes}
               onChangeText={setNotes}
               multiline
-              numberOfLines={3}
+              helperText={t('checkout.shippingNotesPlaceholder')}
             />
-          </View>
+          </SectionCard>
 
-          <View
-            style={[
-              styles.section,
-              { backgroundColor: config.theme.surface, borderColor: config.theme.border },
-            ]}
-          >
-            <Text style={[styles.sectionTitle, { color: config.theme.textPrimary }]}>
-              {t('checkout.paymentMethod')}
-            </Text>
-
-            <PaymentOption
-              method="cod"
+          <SectionCard icon="card-outline" title={t('checkout.paymentMethod')}>
+            <PaymentMethodCard
               selected={paymentMethod === 'cod'}
               onSelect={() => setPaymentMethod('cod')}
-              label={t('checkout.cod')}
+              icon="cash-outline"
+              title={t('checkout.cod')}
               description={t('checkout.codDescription')}
-              theme={config.theme}
             />
-            <PaymentOption
-              method="bank_transfer"
+            <PaymentMethodCard
               selected={paymentMethod === 'bank_transfer'}
               onSelect={() => setPaymentMethod('bank_transfer')}
-              label={t('checkout.bankTransfer')}
+              icon="business-outline"
+              title={t('checkout.bankTransfer')}
               description={t('checkout.bankTransferDescription')}
-              theme={config.theme}
             />
-            <PaymentOption
-              method="cmi"
+            <PaymentMethodCard
               selected={paymentMethod === 'cmi'}
               onSelect={() => setPaymentMethod('cmi')}
-              label={t('checkout.cmi')}
+              icon="card"
+              title={t('checkout.cmi')}
               description={t('checkout.cmiDescription')}
-              theme={config.theme}
+              badge="Test"
             />
-          </View>
+          </SectionCard>
 
-          <View
-            style={[
-              styles.section,
-              { backgroundColor: config.theme.surface, borderColor: config.theme.border },
-            ]}
-          >
-            <Text style={[styles.sectionTitle, { color: config.theme.textPrimary }]}>
-              {t('checkout.summary')}
-            </Text>
-            <View style={styles.totalsRow}>
-              <Text style={[styles.totalLabel, { color: config.theme.textSecondary }]}>
+          <SectionCard icon="receipt-outline" title={t('checkout.summary')}>
+            <View style={styles.summaryRow}>
+              <Text style={[typography.body, { color: theme.textSecondary }]}>
                 {t('checkout.subtotal')}
               </Text>
-              <Text style={[styles.totalValue, { color: config.theme.textPrimary }]}>
+              <Text
+                style={[
+                  typography.body,
+                  { color: theme.textPrimary, fontFamily: fontFamily.medium },
+                ]}
+              >
                 {formatPrice(totalAmount, currency)}
               </Text>
             </View>
-            <View style={styles.totalsRow}>
-              <Text style={[styles.totalLabel, { color: config.theme.textSecondary }]}>
+            <View style={styles.summaryRow}>
+              <Text style={[typography.body, { color: theme.textSecondary }]}>
                 {t('checkout.shippingFee')}
               </Text>
-              <Text style={[styles.totalValue, { color: config.theme.textPrimary }]}>
+              <Text
+                style={[
+                  typography.body,
+                  { color: theme.textPrimary, fontFamily: fontFamily.medium },
+                ]}
+              >
                 {formatPrice(SHIPPING_FEE, currency)}
               </Text>
             </View>
-            <View
-              style={[
-                styles.totalsRow,
-                styles.grandTotalRow,
-                { borderTopColor: config.theme.border },
-              ]}
-            >
-              <Text style={[styles.grandTotalLabel, { color: config.theme.textPrimary }]}>
+            <Divider variant="subtle" spacing="sm" />
+            <View style={styles.summaryRow}>
+              <Text
+                style={[
+                  typography.h4,
+                  { color: theme.textPrimary, fontFamily: fontFamily.bold },
+                ]}
+              >
                 {t('checkout.total')}
               </Text>
-              <Text style={[styles.grandTotalValue, { color: config.theme.primary }]}>
+              <Text
+                style={[
+                  typography.h3,
+                  { color: theme.primary, fontFamily: fontFamily.extrabold },
+                ]}
+              >
                 {formatPrice(grandTotal, currency)}
               </Text>
             </View>
-          </View>
+          </SectionCard>
 
-          <View style={{ height: 80 }} />
+          <View style={{ height: 120 }} />
         </ScrollView>
 
         <View
           style={[
             styles.footer,
-            { backgroundColor: config.theme.surface, borderTopColor: config.theme.border },
+            {
+              backgroundColor: theme.surface,
+              borderTopColor: theme.border,
+            },
+            shadow.lg,
           ]}
         >
-          <Pressable
-            style={[
-              styles.confirmButton,
-              { backgroundColor: config.theme.primary },
-              isProcessing && styles.disabledButton,
-            ]}
+          <View style={styles.footerTotals}>
+            <Text style={[typography.caption, { color: theme.textTertiary }]}>
+              {t('checkout.total')}
+            </Text>
+            <Text
+              style={[
+                typography.h3,
+                { color: theme.primary, fontFamily: fontFamily.extrabold },
+              ]}
+            >
+              {formatPrice(grandTotal, currency)}
+            </Text>
+          </View>
+          <Button
+            variant="primary"
+            size="lg"
+            fullWidth
+            loading={isProcessing}
+            iconRight="checkmark-circle"
             onPress={handleConfirmOrder}
-            disabled={isProcessing}
           >
-            {isProcessing ? (
-              <ActivityIndicator color={config.theme.textInverse} />
-            ) : (
-              <Text style={[styles.confirmButtonText, { color: config.theme.textInverse }]}>
-                {t('checkout.confirmOrder')}  ·  {formatPrice(grandTotal, currency)}
-              </Text>
-            )}
-          </Pressable>
+            {t('checkout.confirmOrder')}
+          </Button>
         </View>
       </KeyboardAvoidingView>
     </View>
   );
 }
 
-function PaymentOption({
-  selected,
-  onSelect,
-  label,
-  description,
-  theme,
-  disabled,
-}: {
-  method: PaymentMethod;
-  selected: boolean;
-  onSelect: () => void;
-  label: string;
-  description: string;
-  theme: any;
-  disabled?: boolean;
-}) {
-  return (
-    <Pressable
-      style={[
-        styles.paymentRow,
-        selected && { borderColor: theme.primary, backgroundColor: theme.primary + '10' },
-        !selected && { borderColor: theme.border },
-        disabled && { opacity: 0.5 },
-      ]}
-      onPress={onSelect}
-      disabled={disabled}
-    >
-      <View style={[styles.radio, selected && { borderColor: theme.primary }]}>
-        {selected && <View style={[styles.radioInner, { backgroundColor: theme.primary }]} />}
-      </View>
-      <View style={{ flex: 1 }}>
-        <Text style={[styles.paymentLabel, { color: theme.textPrimary }]}>{label}</Text>
-        <Text style={[styles.paymentDescription, { color: theme.textSecondary }]}>
-          {description}
-        </Text>
-      </View>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scrollContent: { padding: 16, gap: 12 },
-  section: {
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-    gap: 8,
-  },
-  sectionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 8 },
-  itemRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, gap: 12 },
-  itemImage: { width: 48, height: 48, borderRadius: 8, backgroundColor: '#F0F0F0' },
-  itemInfo: { flex: 1 },
-  itemTitle: { fontSize: 13, fontWeight: '600' },
-  itemMeta: { fontSize: 12, marginTop: 2 },
-  itemSubtotal: { fontSize: 14, fontWeight: '700' },
-  label: { fontSize: 13, marginTop: 8, marginBottom: 4 },
-  input: {
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
-  },
-  textArea: { minHeight: 60, textAlignVertical: 'top' },
-  paymentRow: {
+  scrollContent: { padding: spacing.md },
+  itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    marginVertical: 4,
-    gap: 12,
+    paddingVertical: spacing.xs,
+    gap: spacing.sm,
   },
-  radio: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#94A3B8',
+  itemImageWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
-  radioInner: { width: 10, height: 10, borderRadius: 5 },
-  paymentLabel: { fontSize: 14, fontWeight: '600' },
-  paymentDescription: { fontSize: 12, marginTop: 2 },
-  totalsRow: {
+  itemImage: { width: '100%', height: '100%' },
+  itemInfo: { flex: 1, gap: 2 },
+  summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 4,
+    paddingVertical: spacing.xxs,
   },
-  totalLabel: { fontSize: 13 },
-  totalValue: { fontSize: 14, fontWeight: '500' },
-  grandTotalRow: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    paddingTop: 12,
-    marginTop: 4,
-  },
-  grandTotalLabel: { fontSize: 16, fontWeight: '700' },
-  grandTotalValue: { fontSize: 18, fontWeight: '800' },
   footer: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 24,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
     borderTopWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: Platform.OS === 'ios' ? 32 : spacing.md,
   },
-  confirmButton: { paddingVertical: 16, borderRadius: 14, alignItems: 'center' },
-  confirmButtonText: { fontSize: 16, fontWeight: '700' },
-  disabledButton: { opacity: 0.6 },
+  footerTotals: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    marginBottom: spacing.sm,
+  },
 });
