@@ -11,13 +11,16 @@ import { animationConfig } from '@/src/design/animations';
 const CENTRAL_TAB_NAMES = ['create', 'cart'];
 
 export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
-  const { config } = useEnv();
+  const { current, config } = useEnv();
   const theme = config.theme;
 
+  const isMarketplace = current === 'marketplace_c2c';
+  const isShopPro = current === 'b2c_pro';
+
   const visibleRoutes = state.routes.filter((route) => {
-    const { options } = descriptors[route.key];
-    // @ts-ignore - href is in our options
-    return options.href !== null;
+    if (route.name === 'create' && !isMarketplace) return false;
+    if (route.name === 'cart' && !isShopPro) return false;
+    return true;
   });
 
   const centralIndex = visibleRoutes.findIndex((r) => CENTRAL_TAB_NAMES.includes(r.name));
