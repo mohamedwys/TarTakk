@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
@@ -94,11 +95,19 @@ const SecureStoreAdapter = {
   },
 };
 
+// On web, expo-secure-store is a silent no-op: setItemAsync drops the value
+// and getItemAsync returns null, so the session never persists and any
+// getSession() round-trip after login (route nav, page reload, refresh tick,
+// storage.upload signing) sees no JWT — RLS then rejects every authenticated
+// request. Let supabase-js fall back to its default web localStorage adapter
+// there; keep the chunked SecureStore adapter only on native.
+const authStorage = Platform.OS === "web" ? undefined : SecureStoreAdapter;
+
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
-    storage: SecureStoreAdapter,
+    storage: authStorage,
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: false,
+    detectSessionInUrl: Platform.OS === "web",
   },
 });
